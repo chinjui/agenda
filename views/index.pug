@@ -7,13 +7,61 @@ html(lang="en")
          crossorigin="anonymous")
     include includes/firebase_header.html
     meta(name="viewport", content="width=device-width, initial-scale=1")
+    link(rel="stylesheet", type="text/css", href="https://code.jquery.com/ui/1.12.1/themes/blitzer/jquery-ui.css")
     link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.8.2/fullcalendar.css")
+    // TODO slim.min is the same as min?
+    script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js",
+           integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN",
+           crossorigin="anonymous")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.8.2/fullcalendar.js")
     style.
       body {
         overflow-x: hidden;
         word-wrap: break-word;
       }
-    
+      .calendar-container {
+        margin: 40px 5%;
+        padding: 0;
+        font-size: 14px;
+        max-width: 900px;
+      }
+      .date-in-past {
+        background: #ccc;
+      }
+    script.
+      $(document).ready(function() {
+
+        $('#calendar').fullCalendar({
+          header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'basicWeek'
+          },
+          defaultDate: moment().toDate(),
+          navLinks: false, // can click day/week names to navigate views
+          editable: true,
+          defaultView: 'agendaWeek', // only show weekly view
+          // header: false, // Hide buttons/titles
+          minTime: '06:30:00', // Start time for the calendar
+          maxTime: '22:30:00', // End time for the calendar
+          eventLimit: true, // allow "more" link when too many events
+          columnHeaderFormat: 'ddd', // Only show day of the week names
+          themeSystem: 'jquery-ui',
+          handleWindowResize: true,
+          firstDay: 6, // arrange agenda from Saturday
+          displayEventTime: true, // Display event time
+          viewRender: function(view, element){
+            $('.fc-day').filter(
+              function(index){
+              return moment( $(this).data('date') ).isBefore(moment(),'day') 
+            }).addClass('date-in-past');
+          },
+          events: [], 
+        });
+
+      });    
   body
     // sign in navbar & sign in modal
     nav.navbar.navbar-expand-xl.navbar-dark.bg-dark
@@ -43,15 +91,9 @@ html(lang="en")
         span(class="navbar-toggler-icon")
           
     // calendar
-    div.container.wrapper
-      div(id="sign-in-status")
-      div(id="sign-in")
-      div(id="account-details")
+    div.container.wrapper.calendar-container
+      div#calendar.fc
 
-
-    script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js",
-           integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN",
-           crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js",
            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q",
            crossorigin="anonymous")
