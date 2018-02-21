@@ -1,0 +1,117 @@
+doctype html
+html(lang="en")
+  head
+    include includes/firebase_header.html
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    link(rel="stylesheet", type="text/css", href="https://code.jquery.com/ui/1.12.1/themes/blitzer/jquery-ui.css")
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.8.2/fullcalendar.css")
+    // TODO slim.min is the same as min?
+    script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js",
+           integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN",
+           crossorigin="anonymous")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js",
+           integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb",
+           crossorigin="anonymous")
+
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.8.2/fullcalendar.js")
+    style.
+      body {
+        overflow-x: hidden;
+        word-wrap: break-word;
+      }
+      .calendar-container {
+        margin: 40px 5%;
+        padding: 0;
+        font-size: 14px;
+        max-width: 900px;
+      }
+      .date-in-past {
+        background: #ccc;
+        opacity: 0.3;
+      }
+      .navbar > button { float: right; }
+    script.
+      $(document).ready(function() {
+
+        $('#calendar').fullCalendar({
+          header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: ''
+          },
+          defaultDate: moment().toDate(),
+          navLinks: false, // can click day/week names to navigate views
+          editable: true,
+          defaultView: 'agendaWeek', // only show weekly view
+          // header: false, // Hide buttons/titles
+          minTime: '06:30:00', // Start time for the calendar
+          maxTime: '22:30:00', // End time for the calendar
+          eventLimit: true, // allow "more" link when too many events
+          columnHeaderFormat: 'ddd', // Only show day of the week names
+          themeSystem: 'jquery-ui',
+          handleWindowResize: true,
+          firstDay: 6, // arrange agenda from Saturday
+          displayEventTime: true, // Display event time
+          selectable: true, // allow highlight by clicking and dragging
+          viewRender: function(view, element){
+            $('.fc-day').filter(
+              function(index){
+              return moment( $(this).data('date') ).isBefore(moment(),'day') 
+            }).addClass('date-in-past');
+          },
+          events: [], 
+        });
+
+      });    
+  body
+    nav.navbar.navbar-expand-xl.navbar-dark.bg-dark
+      // navbar brand, title, collapse container
+      a(class="navbar-brand")
+        img(src="https://gdurl.com/SDjR", class="d-inline-block", width="36", height="36", alt="")
+      span(class="navbar-brand text-center mr-auto") 新竹市大專得勝訓練
+      div(id="user-info-container", class="collapse navbar-collapse")
+
+      // sign in modal
+      div(class="modal fade", id="signin-modal")
+        div(class="modal-dialog modal-dialog-centered")
+          div(class="modal-content")
+            div(class="modal-header")
+              h4(class="modal-title") 登入
+              button(type="button", class="close", data-dismiss="modal") &times;
+            div(class="modal-body")
+              div(id="firebaseui-auth-container")
+            div(class="modal-footer")
+              button(type="button", class="btn btn-danger", data-dismiss="modal") 取消
+      
+      button(class="navbar-toggler navbar-toggler-right",
+             type="button",
+             data-toggle="collapse",
+             data-target="#user-info-container",
+             aria-controls="user-info-container",
+             aria-expanded="false",
+             aria-label="Toggle navigation")
+        span(class="navbar-toggler-icon")
+          
+    // calendar
+    div.container.wrapper.calendar-container
+      div#calendar.fc
+
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js",
+           integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q",
+           crossorigin="anonymous")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js",
+           integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl",
+           crossorigin="anonymous")
+
+    ul(class="navbar-nav ml-auto", id="user-info", style='display:none')
+      li(class="nav-item")
+        img(width="36", height="36", class="rounded-circle nav-item user-image")
+      li(class="nav-item")
+        span(class="navbar-text text-center user-name")
+      li(class="nav-item")
+        button(class="btn btn-danger nav-item sign-out-button") 登出
+
+
+

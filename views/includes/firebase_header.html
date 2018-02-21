@@ -83,16 +83,9 @@ initApp = function() {
               ui.start('#firebaseui-auth-container', uiConfig);
             });
             new_user_info.show();
-            // $('#user-status').append('\<img src="' + photoURL + '" width="36" height="36" class="rounded-circle nav-item" id="info-1">');
-            // $('#user-status').append('\<span class="navbar-text text-center" id="info-2">' + displayName + '\<\/span>');
-            // $('#user-status').append('\<button class="btn btn-danger nav-item" id="sign-out-button">登出\<\/button>');
             console.log("User signed in");
           } else {
             // User is signed out.
-            document.getElementById('sign-in-status').textContent = 'Signed out';
-            document.getElementById('sign-in').textContent = 'Sign in';
-            document.getElementById('account-details').textContent = 'null';
-          
             $('#user-info-instance').remove();
             $('#user-info-container').append('\<button class="btn btn-success nav-item ml-auto"' +  
                                                 'id="sign-in-button" data-toggle="modal" data-target="#signin-modal">登入\<\/button>');
