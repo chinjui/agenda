@@ -1,0 +1,111 @@
+<meta charset="UTF-8">
+<title>Sample FirebaseUI App</title>
+<!-- *******************************************************************************************
+	 * TODO(DEVELOPER): Paste the initialization snippet from:
+	 * Firebase Console > Overview > Add Firebase to your web app. *
+	 ***************************************************************************************** -->
+<script src="https://cdn.firebase.com/libs/firebaseui/2.6.0/firebaseui.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.6.0/firebaseui.css" />
+
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDliiVVuLmYHWlyZinXZmZVIUJ-xXf6umg",
+    authDomain: "week-calendar-194609.firebaseapp.com",
+    databaseURL: "https://week-calendar-194609.firebaseio.com",
+    projectId: "week-calendar-194609",
+    storageBucket: "week-calendar-194609.appspot.com",
+    messagingSenderId: "265881990067"
+  };
+  firebase.initializeApp(config);
+</script>
+
+<script type="text/javascript">
+	// FirebaseUI config.
+	var uiConfig = {
+    callbacks: {
+      signInSuccess: function(user, credential, redirectUrl) {
+        return false
+      }
+    },
+		signInOptions: [
+			// Leave the lines as is for the providers you want to offer your users.
+			firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+			firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+			firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+		  firebase.auth.EmailAuthProvider.PROVIDER_ID,
+    ],
+		// Terms of service url.
+		tosUrl: '<your-tos-url>'
+	};
+
+	// Initialize the FirebaseUI Widget using Firebase.
+	var ui = new firebaseui.auth.AuthUI(firebase.auth());
+	// The start method will wait until the DOM is loaded.
+  ui.start('#firebaseui-auth-container', uiConfig);
+</script>
+<script>
+initApp = function() {
+        firebase.auth().onAuthStateChanged(function(user) {
+          if (user) {
+            // User is signed in.
+            var displayName = user.displayName;
+            var email = user.email;
+            var emailVerified = user.emailVerified;
+            var photoURL = user.photoURL;
+            var uid = user.uid;
+            var phoneNumber = user.phoneNumber;
+            var providerData = user.providerData;
+            // user.getIdToken().then(function(accessToken) {
+            //   document.getElementById('sign-in-status').textContent = 'Signed in';
+            //   document.getElementById('sign-in').textContent = 'Sign out';
+            //   document.getElementById('account-details').textContent = JSON.stringify({
+            //     displayName: displayName,
+            //     email: email,
+            //     emailVerified: emailVerified,
+            //     phoneNumber: phoneNumber,
+            //     photoURL: photoURL,
+            //     uid: uid,
+            //     //accessToken: accessToken,
+            //     providerData: providerData
+            //   }, null, '  ');
+            // });
+
+            // append user info & sign out button
+            $('#sign-in-button').remove();
+            var new_user_info = $('#user-info').clone();
+            new_user_info.attr("id", "user-info-instance")
+              .appendTo("#user-info-container");
+            $('.user-image').attr("src", photoURL);
+            $('.user-name').html(displayName);
+            $('.sign-out-button').on('click', function(event) {
+              firebase.auth().signOut();
+              ui.start('#firebaseui-auth-container', uiConfig);
+            });
+            new_user_info.show();
+            // $('#user-status').append('\<img src="' + photoURL + '" width="36" height="36" class="rounded-circle nav-item" id="info-1">');
+            // $('#user-status').append('\<span class="navbar-text text-center" id="info-2">' + displayName + '\<\/span>');
+            // $('#user-status').append('\<button class="btn btn-danger nav-item" id="sign-out-button">登出\<\/button>');
+            console.log("User signed in");
+          } else {
+            // User is signed out.
+            document.getElementById('sign-in-status').textContent = 'Signed out';
+            document.getElementById('sign-in').textContent = 'Sign in';
+            document.getElementById('account-details').textContent = 'null';
+          
+            $('#user-info-instance').remove();
+            $('#user-info-container').append('\<button class="btn btn-success nav-item ml-auto"' +  
+                                                'id="sign-in-button" data-toggle="modal" data-target="#signin-modal">登入\<\/button>');
+            console.log("User signed out");
+          }
+        }, function(error) {
+          console.log(error);
+        });
+      };
+      
+      window.addEventListener('load', function() {
+        initApp()
+      });
+      
+</script>

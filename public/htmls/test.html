@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</head>
+  
+
+<body>
+	<nav id="navbar" class="navbar navbar-dark bg-dark">
+    <img alt="Brand" 
+         src="https://gdurl.com/SDjR"
+         class="rounded"
+         width="36" height="36"
+         >
+    <button class="btn btn-success" data-toggle="modal" data-target="#signin-modal">Sign In</button>
+  </nav>
+  <script>
+    setInterval(function() {
+      $('#navbar').append('\<button class="btn btn-success" id="sign-in-button">登入\<\/button>');
+    }, 3000);
+  </script>
+
+</body>
+</html>
+
