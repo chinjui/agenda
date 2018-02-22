@@ -69,7 +69,7 @@ router.get('/get_events', function(req, res, next){
       fs.mkdir(path, 0744, function(err) {
         if (err) {
           if (err.code == 'EEXIST') readEventFromFile(); // ignore the error if the folder already exists
-          else throw err;
+          else console.log(err);
         }
         else readEventFromFile(); // successfully created folder
     	});
