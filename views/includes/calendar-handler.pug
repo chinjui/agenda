@@ -2,6 +2,7 @@ script.
   // globals
   var clicked_date = null;
   var clicked_event = null;
+  var isClicked = false;
 
   $(document).ready(function() {
     $('#calendar').fullCalendar({
@@ -14,7 +15,6 @@ script.
             for (i = 1; i < event_sources.length; i++) {
               raw_events.push(event_sources[i]['rawEventDefs'][0]);
             }
-            console.log("row events got: " + JSON.stringify(raw_events));
             // send to server
             $.post('http://' + location.host + '/add-events',   // server url
                    {access_token: access_token, events: JSON.stringify(raw_events)},  // data in json format
@@ -53,6 +53,7 @@ script.
       firstDay: 6, // arrange agenda from Saturday
       displayEventTime: true, // Display event time
       selectable: true, // allow highlight by clicking and dragging
+      handleWindowResize: false,
       viewRender: function(view, element){
         // grey-out passed days
         $('.fc-day').filter(
@@ -61,8 +62,18 @@ script.
         }).addClass('date-in-past');
       },
       dayClick: function(date, jsEvent, view) {
-        clicked_date = date;
-        $('#event-query-modal').modal('show');
+        if(isClicked){
+          clicked_date = date;
+          $('#event-query-modal').modal('show');
+          isClicked = false;
+        }
+        else{
+          isClicked = true;
+        }
+        setTimeout(function(){
+          isClicked = false;
+        }, 250);
+				
       },
       eventClick: function(calEvent, jsEvent, view) {
         clicked_event = calEvent;
@@ -70,8 +81,38 @@ script.
         $('#body-event-description').text(calEvent.description);
         $('#event-show-modal').modal('show');
       },
+      eventAfterRender: function(view, ele) {
+        $('.fc-scroller').css('height', 'auto');
+        console.log('viewRender');
+      },
+      eventDrop: function(event, delta, revertFunc) {
+        source = event.source.rawEventDefs[0];
+        console.log(event.end._d.toGMTString());
+        new_end = moment.utc(event.end._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
+        source.end = new_end;
+        new_start = moment.utc(event.start._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
+        source.start = new_start;
+
+        $('#calendar').fullCalendar('updateEvent', event);
+        event_sources = $('#calendar').fullCalendar('getEventSources');
+        console.log(event_sources);
+      },
+      eventResize: function(event) {
+        source = event.source.rawEventDefs[0];
+        console.log(event.end._d.toGMTString());
+        new_end = moment.utc(event.end._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
+        source.end = new_end;
+        new_start = moment.utc(event.start._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
+        source.start = new_start;
+
+        $('#calendar').fullCalendar('updateEvent', event);
+        event_sources = $('#calendar').fullCalendar('getEventSources');
+        console.log(event_sources);
+        
+      },
       events: [],
     });
+    $('.fc-scroller').css('height', 'auto');
   });
 
 html
