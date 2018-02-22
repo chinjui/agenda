@@ -13,7 +13,20 @@ body {
   opacity: 0.3;
 }
 .navbar > button { float: right; }
-
 ul > li {
     margin-right:5px;
+}
+
+/* change placeholder color for inputs */ 
+.form-control::-webkit-input-placeholder { 
+  color: #D3D3D3;
+}
+.form-control::-moz-placeholder {
+  color: #D3D3D3;
+}
+.form-control:-ms-input-placeholder {
+  color: #D3D3D3;
+}
+.form-control:placeholder {
+  color: #D3D3D3;
 }

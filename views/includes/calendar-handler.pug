@@ -1,0 +1,135 @@
+script.
+  // globals
+  var clicked_date = null;
+  var clicked_event = null;
+
+  $(document).ready(function() {
+    $('#calendar').fullCalendar({
+      customButtons: {
+        add_events: {
+          text: '確認更改',
+          click: function() {
+            event_sources = $('#calendar').fullCalendar('getEventSources');
+            raw_events = []
+            for (i = 1; i < event_sources.length; i++) {
+              raw_events.push(event_sources[i]['rawEventDefs'][0]);
+            }
+            // send to server
+            $.post('http://localhost:3000/add-events',   // server url
+                   {access_token: access_token, events: JSON.stringify(raw_events)},  // data in json format
+                   function(data) {               // sent successfully callback
+                     alert(data);
+                   }
+            );
+          }
+        },
+        cancel_modification: {
+          text: '復原',
+          click: function() {
+            // TODO
+          }
+        }
+      },
+      header: {
+        left: 'title',
+        center: '',
+        right: 'today prev,next'
+      },
+      footer: {
+        center: 'add_events cancel_modification',
+      },
+      defaultDate: moment().toDate(),
+      navLinks: false, // can click day/week names to navigate views
+      editable: true,
+      defaultView: 'agendaWeek', // only show weekly view
+      // header: false, // Hide buttons/titles
+      minTime: '06:30:00', // Start time for the calendar
+      maxTime: '22:30:00', // End time for the calendar
+      eventLimit: true, // allow "more" link when too many events
+      columnHeaderFormat: 'ddd', // Only show day of the week names
+      themeSystem: 'jquery-ui',
+      handleWindowResize: true,
+      firstDay: 6, // arrange agenda from Saturday
+      displayEventTime: true, // Display event time
+      selectable: true, // allow highlight by clicking and dragging
+      viewRender: function(view, element){
+        // grey-out passed days
+        $('.fc-day').filter(
+          function(index){
+          return moment( $(this).data('date') ).isBefore(moment(),'day')
+        }).addClass('date-in-past');
+      },
+      dayClick: function(date, jsEvent, view) {
+        clicked_date = date;
+        $('#event-query-modal').modal('show');
+      },
+      eventClick: function(calEvent, jsEvent, view) {
+        clicked_event = calEvent;
+        $('#header-event-title').text(calEvent.title);
+        $('#body-event-description').text(calEvent.description);
+        $('#event-show-modal').modal('show');
+      },
+      events: [],
+    });
+  });
+
+html
+  // calendar event query modal
+  div(class="modal fade", id="event-query-modal")
+    div(class="modal-dialog modal-dialog-centered")
+      div(class="modal-content")
+        div(class="modal-header")
+          h4(class="modal-title") 新增事項
+          button(type="button", class="close", data-dismiss="modal") &times;
+        div(class="modal-body")
+          div(class="form-group")
+            label(for="event_name") 事項名稱:
+            input(type="text", class="form-control", id="event_name")
+          div(class="form-group")
+            label(for="event_description") 描述:
+            textarea(type="password", class="form-control", id="event_description", rows="3")
+        div(class="modal-footer")
+          button(type="button", class="btn btn-success", data-dismiss="modal", id="confirm-add-event") 確定
+          button(type="button", class="btn btn-danger", data-dismiss="modal") 取消
+
+  // show event detail
+  div(class="modal fade", id="event-show-modal")
+    div(class="modal-dialog modal-dialog-centered")
+      div(class="modal-content")
+        div(class="modal-header")
+          h4(class="modal-title", id="header-event-title")
+          button(type="button", class="close", data-dismiss="modal") &times;
+        div(class="modal-body")
+          div(class="form-group")
+            label(id="body-event-description")
+        div(class="modal-footer")
+          button(type="button", class="btn btn-success", data-dismiss="modal") 確定
+          button(type="button", class="btn btn-danger", data-dismiss="modal", id="delete-event") 刪除
+
+script.
+  $('#event-query-modal button').on('click', function(event) {
+    if (this.id == 'confirm-add-event') {
+      var event_source = [{
+        title: $('#event_name').val(),
+        description: $('#event_description').val(),
+        start: clicked_date.format(),
+        end: clicked_date.add(1, 'hours').format(),
+      }];
+      $('#calendar').fullCalendar('addEventSource', event_source);
+    }
+
+    $('#event_name').val("");
+    $('#event_description').val("");
+  });  
+    
+  $('#event-show-modal button').on('click', function(event) {
+    if (this.id == 'delete-event') {
+      $('#calendar').fullCalendar('removeEvents', function(calEvent) {
+        if (calEvent.title == clicked_event.title && 
+            calEvent.start._i == clicked_event.start._i)
+          return true;
+        else
+          return false;
+      });
+    }
+  });

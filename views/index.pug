@@ -5,11 +5,12 @@ html(lang="en")
     meta(name="viewport", content="width=device-width, initial-scale=1, shrink-to-fit=no")
     meta(name="description", content="")
     meta(name="author", content="")
-    include includes/firebase_header.html
     link(href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css", rel="stylesheet")
     link(rel="stylesheet", type="text/css", href="https://code.jquery.com/ui/1.12.1/themes/blitzer/jquery-ui.css")
     link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.8.2/fullcalendar.css")
     link(rel="stylesheet", href="stylesheets/style.css")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js")
+    include includes/firebase_header.html
   body
     nav.navbar.navbar-toggleable-md.navbar-inverse.bg-inverse
       // collapse button
@@ -46,19 +47,16 @@ html(lang="en")
       Bootstrap core JavaScript
       ==================================================
     // Placed at the end of the document so the pages load faster
-    script(src="https://code.jquery.com/jquery-3.1.1.slim.min.js", integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n", crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js", integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb", crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js")
     script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.8.2/fullcalendar.js")
-    script
-      include includes/calendar-handler.js
+    include includes/calendar-handler.pug
 
     // user info element template (used to create instance when signed in)
     ul(class="navbar-nav ml-auto mt-2 mt-md-0", id="user-info", style='display:none')
       li(class="nav-item")
-        img(width="36", height="36", class="rounded-circle nav-item user-image")
-      li(class="nav-item")
+        img(width="32", height="32", class="rounded-circle nav-item user-image", style="margin-right: 5px")
         span(class="navbar-text text-center user-name")
-      li(class="nav-item")
-        button(class="btn btn-danger nav-item sign-out-button") 登出
+        span(class="vavbar-text text-center space") &nbsp
+        button(class="btn btn-danger nav-item sign-out-button ml-auto", style="float: right;") 登出

@@ -7,6 +7,11 @@
 <script src="https://cdn.firebase.com/libs/firebaseui/2.6.0/firebaseui.js"></script>
 <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.6.0/firebaseui.css" />
 <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+
+<!-- need? -->
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-auth.js"></script>
+
 <script>
   // Initialize Firebase
   var config = {
@@ -45,6 +50,7 @@
   ui.start('#firebaseui-auth-container', uiConfig);
 </script>
 <script>
+var access_token = null;
 initApp = function() {
         firebase.auth().onAuthStateChanged(function(user) {
           if (user) {
@@ -56,21 +62,31 @@ initApp = function() {
             var uid = user.uid;
             var phoneNumber = user.phoneNumber;
             var providerData = user.providerData;
-            // user.getIdToken().then(function(accessToken) {
-            //   document.getElementById('sign-in-status').textContent = 'Signed in';
-            //   document.getElementById('sign-in').textContent = 'Sign out';
-            //   document.getElementById('account-details').textContent = JSON.stringify({
-            //     displayName: displayName,
-            //     email: email,
-            //     emailVerified: emailVerified,
-            //     phoneNumber: phoneNumber,
-            //     photoURL: photoURL,
-            //     uid: uid,
-            //     //accessToken: accessToken,
-            //     providerData: providerData
-            //   }, null, '  ');
-            // });
-
+            user.getIdToken().then(function(accessToken) {
+              access_token = accessToken;  
+              $.get('http://localhost:3000/get_events',
+                    {access_token: access_token}, 
+                    function(data) {
+                      console.log(data);
+                      try {
+                        data = JSON.parse(data);
+                        for (var i = 0; i < data.length; i++) {
+                          d = data[i];
+                          var event_source = [{
+                            title: d.title,
+                            description: d.description,
+                            start: d.start,
+                            end: d.end,
+                          }];
+                          $('#calendar').fullCalendar('addEventSource', event_source);
+                        }
+                      }
+                      catch (err) {
+                        console.log(data);
+                      }
+                    })
+              }, null, '  ');
+            
             // append user info & sign out button
             $('#sign-in-button').remove();
             var new_user_info = $('#user-info').clone();
@@ -89,6 +105,10 @@ initApp = function() {
             $('#user-info-instance').remove();
             $('#user-info-container').append('\<button class="btn btn-success nav-item ml-auto"' +  
                                                 'id="sign-in-button" data-toggle="modal" data-target="#signin-modal">登入\<\/button>');
+            access_token = null;
+
+            // TODO confirm sign-out for remained events
+            $('#calendar').fullCalendar('removeEvents');
             console.log("User signed out");
           }
         }, function(error) {
