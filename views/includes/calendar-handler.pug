@@ -14,8 +14,9 @@ script.
             for (i = 1; i < event_sources.length; i++) {
               raw_events.push(event_sources[i]['rawEventDefs'][0]);
             }
+            console.log("row events got: " + JSON.stringify(raw_events));
             // send to server
-            $.post('http://localhost:3000/add-events',   // server url
+            $.post('http://' + location.host + '/add-events',   // server url
                    {access_token: access_token, events: JSON.stringify(raw_events)},  // data in json format
                    function(data) {               // sent successfully callback
                      alert(data);
@@ -26,7 +27,7 @@ script.
         cancel_modification: {
           text: '復原',
           click: function() {
-            // TODO
+            location.reload();
           }
         }
       },
@@ -124,12 +125,6 @@ script.
     
   $('#event-show-modal button').on('click', function(event) {
     if (this.id == 'delete-event') {
-      $('#calendar').fullCalendar('removeEvents', function(calEvent) {
-        if (calEvent.title == clicked_event.title && 
-            calEvent.start._i == clicked_event.start._i)
-          return true;
-        else
-          return false;
-      });
+      $('#calendar').fullCalendar('removeEventSource', clicked_event.source);
     }
   });

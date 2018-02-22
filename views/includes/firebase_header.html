@@ -62,9 +62,10 @@ initApp = function() {
             var uid = user.uid;
             var phoneNumber = user.phoneNumber;
             var providerData = user.providerData;
+            console.log(location.host);
             user.getIdToken().then(function(accessToken) {
-              access_token = accessToken;  
-              $.get('http://localhost:3000/get_events',
+              access_token = accessToken;
+              $.get('http://' + location.host + '/get_events',
                     {access_token: access_token}, 
                     function(data) {
                       console.log(data);
