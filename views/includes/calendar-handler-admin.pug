@@ -1,0 +1,69 @@
+script.
+  // globals
+  var clicked_date = null;
+  var clicked_event = null;
+  var isClicked = false;    // workaround to change dayclick to double click triggered event
+
+  $(document).ready(function() {
+    $('#calendar').fullCalendar({
+      header: {
+        left: 'title',
+        center: '',
+        right: 'today prev,next'
+      },
+      footer: {
+        center: 'add_events cancel_modification',
+      },
+      defaultDate: moment().toDate(),
+      navLinks: false, // can click day/week names to navigate views
+      editable: false,
+      defaultView: 'agendaWeek', // only show weekly view
+      // header: false, // Hide buttons/titles
+      minTime: '06:30:00', // Start time for the calendar
+      maxTime: '22:30:00', // End time for the calendar
+      eventLimit: true, // allow "more" link when too many events
+      columnHeaderFormat: 'ddd', // Only show day of the week names
+      themeSystem: 'jquery-ui',
+      handleWindowResize: true,
+      firstDay: 6, // arrange agenda from Saturday
+      displayEventTime: true, // Display event time
+      selectable: true, // allow highlight by clicking and dragging
+      handleWindowResize: false,
+      viewRender: function(view, element){
+        // grey-out passed days
+        $('.fc-day').filter(
+          function(index){
+          return moment( $(this).data('date') ).isBefore(moment(),'day')
+        }).addClass('date-in-past');
+      },
+      eventClick: function(calEvent, jsEvent, view) {
+        clicked_event = calEvent;
+        $('#header-event-title').text(calEvent.title);
+        $('#body-event-description').text(calEvent.description);
+        $('#event-show-modal').modal('show');
+      },
+      eventAfterRender: function(view, ele) {
+        $('.fc-scroller').css('height', 'auto');
+      },
+      events: [],
+    });
+    setTimeout(function(){$('.fc-scroller').css('height', 'auto');}, 500);
+  });
+
+html
+  // show event detail
+  div(class="modal fade", id="event-show-modal")
+    div(class="modal-dialog modal-dialog-centered")
+      div(class="modal-content")
+        div(class="modal-header")
+          h4(class="modal-title", id="header-event-title")
+          button(type="button", class="close", data-dismiss="modal") &times;
+        div(class="modal-body")
+          div(class="form-group")
+            label(id="body-event-description")
+        div(class="modal-footer")
+          button(type="button", class="btn btn-success", data-dismiss="modal") 確定
+
+script.
+  $('#event-show-modal button').on('click', function(event) {
+  });

@@ -55,7 +55,8 @@ html(lang="en")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js")
     script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.8.2/fullcalendar.js")
-    include includes/calendar-handler.pug
+    block calendar-handler
+      include includes/calendar-handler.pug
 
     // user info element template (used to create instance when signed in)
     ul(class="navbar-nav ml-auto mt-2 mt-md-0", id="user-info", style='display:none')

@@ -58,10 +58,10 @@ block onAuthStateChanged
         var uid = user.uid;
         var phoneNumber = user.phoneNumber;
         var providerData = user.providerData;
-        console.log(location.host);
+        
         user.getIdToken().then(function(accessToken) {
           access_token = accessToken;
-          $.post('http://' + location.host + '/get_events',
+          $.post('http://' + location.host + '/get-events',
             {access_token: access_token},
             function(data) {
               console.log(data);
@@ -81,7 +81,7 @@ block onAuthStateChanged
               catch (err) {
                 console.log(data);
               }
-            })
+            });
           }, null, '  ');
         
         // append user info & sign out button

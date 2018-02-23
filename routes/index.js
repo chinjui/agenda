@@ -4,6 +4,9 @@ var admin = require('firebase-admin');
 var fs = require('fs');
 
 var serviceAccount = require('../week-calendar-194609-firebase-adminsdk-o53vz-a2d31d8bc9.json');
+
+var admin_uid = "g3zIfkYXPuSSfCAM6ehVdISESOl2";
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://week-calendar-194609.firebaseio.com'
@@ -26,7 +29,7 @@ router.post('/add-events', function(req, res, next) {
   admin.auth().verifyIdToken(access_token)
     .then(function(decodedToken) {
       var uid = decodedToken.uid;
-      var name = decodedToken.displayName;
+      var name = decodedToken.name;
       var path = __dirname + '/../data/agendas/' + uid;
 
       var addEventToFile = function() {
@@ -52,21 +55,46 @@ router.post('/add-events', function(req, res, next) {
     });
 });
 
-router.post('/get_events', function(req, res, next){
+router.post('/get-events', function(req, res, next){
   var access_token = req.body['access_token'];
+  var requested_uid = req.body['requested_uid'];
 
   // verify user
   admin.auth().verifyIdToken(access_token)
     .then(function(decodedToken) {
       var uid = decodedToken.uid;
-      var name = decodedToken.displayName;
+      var name = decodedToken.name;
+      if (admin_uid == uid && typeof(requested_uid) != 'undefined')
+        uid = requested_uid;
+      else if (admin_uid != uid && typeof(requested_uid) != 'undefined') {
+        res.end('You are not an admin!');
+        return;
+      }
       var path = __dirname + '/../data/agendas/' + uid;
+      var user_info_path = __dirname + '/../public/users';
 
       var readEventFromFile = function() {
         fs.readFile(path + '/today', function(err, data) {
           if(err)
             res.end(err.toString());
           res.end(data);
+        });
+      };
+      var addUserIfNotExist = function(uid, name) {
+        fs.readFile(user_info_path, function(err, data) {
+          if (err)
+            console.log(err);
+          users = JSON.parse(data);
+          if (!users.hasOwnProperty(uid)) {
+            console.log('name: ' + name + ', '+ uid);
+            users[uid] = name;
+            fs.writeFile(user_info_path, JSON.stringify(users), function(err) {
+              if(err) {
+                return console.log(err);
+              }
+              console.log('User ' + name + ' was saved!');
+            });
+          }
         });
       };
 
@@ -76,8 +104,11 @@ router.post('/get_events', function(req, res, next){
           if (err.code == 'EEXIST') readEventFromFile(); // ignore the error if the folder already exists
           else console.log(err);
         }
-        else readEventFromFile(); // successfully created folder
+        else { // user signed in for the 1st time
+          readEventFromFile();
+        }
       });
+      addUserIfNotExist(uid, name);
     }).catch(function(error) {
       res.send(error.toString() + '. Failed to verify user.');
     });
