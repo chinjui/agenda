@@ -86,7 +86,6 @@ script.
       },
       eventDrop: function(event, delta, revertFunc) {
         source = event.source.rawEventDefs[0];
-        // console.log(event.end._d.toGMTString());
         new_end = moment.utc(event.end._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
         source.end = new_end;
         new_start = moment.utc(event.start._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
@@ -97,7 +96,6 @@ script.
       },
       eventResize: function(event) {
         source = event.source.rawEventDefs[0];
-        console.log(event.end._d.toGMTString());
         new_end = moment.utc(event.end._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
         source.end = new_end;
         new_start = moment.utc(event.start._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
@@ -147,11 +145,46 @@ html
 script.
   $('#event-query-modal button').on('click', function(event) {
     if (this.id == 'confirm-add-event') {
+      now = moment();
+      friday_6pm = now.clone().day(5).startOf('day').hour(18);
+      saturday_end = now.clone().endOf('week');
+      if (now.isBetween(friday_6pm, saturday_end)) {
+        plan_begin = friday_6pm;
+        plan_end = plan_begin.clone().endOf('day');
+        adjust_end = friday_6pm.clone().add(7, 'days');
+      }
+      else {
+        plan_begin = friday_6pm.clone().add(-7, 'days');
+        plan_end = plan_begin.clone().endOf('day');
+        adjust_end = friday_6pm.clone();
+      }
+
+      if (clicked_date.isBefore(plan_end)) {
+        alert("已過行事曆不可更改");
+        return;
+      }
+      else if (clicked_date.isAfter(adjust_end)) {
+        alert("未到可排程日期");
+        return;
+      }
+
+      if (now.isBetween(plan_begin, plan_end)) {
+        var color = '#FF3C33'; // red  
+      }
+      else if (now.isBetween(plan_end, adjust_end)) {
+        var color = '#2ECB4B'; // green
+      }
+      else {
+        alert("Error: time is not between plan_begin & adjust_end. Please contact website administrator.");
+        return;
+      }
+
       var event_source = [{
         title: $('#event_name').val(),
         description: $('#event_description').val(),
         start: clicked_date.format(),
         end: clicked_date.add(1, 'hours').format(),
+        color: color
       }];
       $('#calendar').fullCalendar('addEventSource', event_source);
     }

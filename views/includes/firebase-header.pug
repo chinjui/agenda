@@ -71,7 +71,6 @@ block onAuthStateChanged
         $.get('http://' + location.host + '/users',
           null,
           function(data) {
-            console.log(data);
             try {
               data = JSON.parse(data);
               user_name = data[uid];
@@ -87,7 +86,6 @@ block onAuthStateChanged
           $.post('http://' + location.host + '/get-events',
             {access_token: access_token},
             function(data) {
-              console.log(data);
               try {
                 data = JSON.parse(data);
                 for (var i = 0; i < data.length; i++) {
@@ -97,6 +95,7 @@ block onAuthStateChanged
                     description: d.description,
                     start: d.start,
                     end: d.end,
+                    color: d.color
                   }];
                   $('#calendar').fullCalendar('addEventSource', event_source);
                 }
@@ -124,7 +123,6 @@ block onAuthStateChanged
         $('.user-image').attr("src", photoURL);
         // $('.user-name').html(displayName);
         $('.user-name').blur(function(){
-          console.log("blur");
           $.post('http://' + location.host + '/change-name',
             {access_token: access_token, new_name: $('.user-name').html()},
             function(data) {
