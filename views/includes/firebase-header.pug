@@ -67,59 +67,86 @@ block onAuthStateChanged
         var phoneNumber = user.phoneNumber;
         var providerData = user.providerData;
         
-        // get user name 
-        $.get('http://' + location.host + '/users',
-          null,
-          function(data) {
-            try {
-              data = JSON.parse(data);
-              user_name = data[uid];
-              $('.user-name').html(user_name);
-            }
-            catch (err) {
-              console.log(err, data);
-              $('.user-name').html(displayName);
-            }
-        });
         
         user.getIdToken().then(function(accessToken) {
           access_token = accessToken;
-          $.post('http://' + location.host + '/get-events',
-            {access_token: access_token, requested_time: 'now'},
-            function(data) {
-              try {
-                data = JSON.parse(data);
-                for (var i = 0; i < data.length; i++) {
-                  d = data[i];
-                  if (d.className == 'past-plan')
-                    color = '#FF3C33';  // red
-                  else if (d.className == 'past-adjust')
-                    color = '#2ECB4B';  // green
-                  else if (d.className == 'now') {
-                    // client will only recieve className: 'now'
-                    // though it is in plan or adjust file
-                    color = '#3A87AD';  // blue
-                  }
-                  else {
-                    // TODO: error occur
-                    color = '#EC9600';  // orange
-                  }
+          function get_events(requested_time) {
+            $.post('http://' + location.host + '/get-events',
+              {access_token: access_token, requested_time: requested_time},
+              function(data) {
+                try {
+                  data = JSON.parse(data);
+                  for (var i = 0; i < data.length; i++) {
+                    d = data[i];
+                    if (d.className == 'past-plan')
+                      color = '#FF3C33';  // red
+                    else if (d.className == 'past-adjust')
+                      color = '#2ECB4B';  // green
+                    else if (d.className == 'now') {
+                      // client will only recieve className: 'now'
+                      // though it is in plan or adjust file
+                      color = '#3A87AD';  // blue
+                    }
+                    else {
+                      // TODO: error occur
+                      color = '#EC9600';  // orange
+                    }
 
-                  var event_source = [{
-                    title: d.title,
-                    description: d.description,
-                    start: d.start,
-                    end: d.end,
-                    color: color,
-                    className: d.className,
-                  }];
-                  $('#calendar').fullCalendar('addEventSource', event_source);
+                    var event_source = [{
+                      title: d.title,
+                      description: d.description,
+                      start: d.start,
+                      end: d.end,
+                      color: color,
+                      className: d.className,
+                    }];
+                    $('#calendar').fullCalendar('addEventSource', event_source);
+                  }
                 }
-              }
-              catch (err) {
-                console.log(data);
-              }
-            });
+                catch (err) {
+                  console.log(data);
+                }
+              });
+            
+          }
+          get_events('now');
+          get_events('past');
+          // $.post('http://' + location.host + '/get-events',
+          //   {access_token: access_token, requested_time: 'now'},
+          //   function(data) {
+          //     try {
+          //       data = JSON.parse(data);
+          //       for (var i = 0; i < data.length; i++) {
+          //         d = data[i];
+          //         if (d.className == 'past-plan')
+          //           color = '#FF3C33';  // red
+          //         else if (d.className == 'past-adjust')
+          //           color = '#2ECB4B';  // green
+          //         else if (d.className == 'now') {
+          //           // client will only recieve className: 'now'
+          //           // though it is in plan or adjust file
+          //           color = '#3A87AD';  // blue
+          //         }
+          //         else {
+          //           // TODO: error occur
+          //           color = '#EC9600';  // orange
+          //         }
+
+          //         var event_source = [{
+          //           title: d.title,
+          //           description: d.description,
+          //           start: d.start,
+          //           end: d.end,
+          //           color: color,
+          //           className: d.className,
+          //         }];
+          //         $('#calendar').fullCalendar('addEventSource', event_source);
+          //       }
+          //     }
+          //     catch (err) {
+          //       console.log(data);
+          //     }
+          //   });
           
           $.post('http://' + location.host + '/get-comment',
             {access_token: access_token},
@@ -130,6 +157,23 @@ block onAuthStateChanged
               }
             });
         }, null, '  ');
+        
+        // get user name 
+        $.get('http://' + location.host + '/users',
+          null,
+          function(data) {
+            try {
+              data = JSON.parse(data);
+              user_name = data[uid];
+              if (typeof(user_name) == 'undefined')
+                user_name = displayName;
+              $('.user-name').html(user_name);
+            }
+            catch (err) {
+              console.log(err, data);
+              $('.user-name').html(displayName);
+            }
+        });
         
         // append user info & sign out button
         $('#sign-in-button').remove();

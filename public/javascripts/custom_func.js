@@ -15,3 +15,4 @@ var get_time_limit = function() {
 
   return [plan_begin, plan_end, adjust_end];
 };
+

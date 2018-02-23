@@ -37,12 +37,14 @@ var _status = get_status();
 
 // round_end_time: time to `merge plan and adjust to past`, a new round begin
 // plan_end_time: tiem to `copy plan to adjust`, plan ends
-var round_end_time = new Date(moment().startOf('day').day(5).hour(18).toString());
+var round_end_time = moment().startOf('day').day(5).hour(18);
 if (moment().isAfter(round_end_time))
   round_end_time.add(7, 'days');
-var plan_end_time = new Date(moment().startOf('day').day(6).hour(1).toString());
+round_end_time = new Date(round_end_time.toString());
+var plan_end_time = moment().startOf('day').day(6).hour(1);
 if (moment().isAfter(plan_end_time))
   plan_end_time.add(7, 'days');
+plan_end_time = new Date(plan_end_time.toString());
 
 /* merge schedule */
 var begin_new_round_schedule = null;
@@ -56,9 +58,13 @@ function begin_new_round() {
   for (var i = 0; i < user_dirs.length; i ++) {
     if (user_dirs[i][0] != '.') {   // if is a normal file
       user_dir = path.join(agendas_dir, user_dirs[i]);
-      var past = JSON.parse(fs.readFileSync(path.join(user_dir, 'past')));
-      var plan = JSON.parse(fs.readFileSync(path.join(user_dir, 'plan')));
-      var adjust = JSON.parse(fs.readFileSync(path.join(user_dir, 'adjust')));
+      var past, plan, adjust;
+      try {past = JSON.parse(fs.readFileSync(path.join(user_dir, 'past')))}
+        catch (err) {console.log(err); past = []};
+      try {plan = JSON.parse(fs.readFileSync(path.join(user_dir, 'plan')))}
+        catch (err) {console.log(err); plan = []};
+      try {adjust = JSON.parse(fs.readFileSync(path.join(user_dir, 'adjust')))}
+        catch (err) {console.log(err); adjust = []};
 
       // add plan to past
       // if the same event appears in adjust, delete it
@@ -83,11 +89,15 @@ function begin_new_round() {
         adjust[j].className = 'past-adjust';
         past.push(adjust[j]);
       }
+      console.log('past: ', past);
+
+      // write to past
+      try {fs.writeFileSync(path.join(user_dir, 'past'), JSON.stringify(past));} catch (err) {console.log(err);}
 
       // delete plan and adjust file
       // let both files be created when users need them
-      fs.unlinkSync(path.join(user_dir, 'plan'));
-      fs.uniinkSync(path.join(user_dir, 'adjust'));
+      try {fs.unlinkSync(path.join(user_dir, 'plan'))} catch  (err) {console.log(err);};
+      try {fs.unlinkSync(path.join(user_dir, 'adjust'))} catch (err) {console.log(err);};
     }
   }
 
@@ -110,7 +120,12 @@ function begin_adjust() {
   for (var i = 0; i < user_dirs.length; i ++) {
     if (user_dirs[i][0] != '.') {   // if is a normal file
       user_dir = path.join(agendas_dir, user_dirs[i]);
-      fs.copyFileSync(path.join(user_dir, 'plan'), path.join(user_dir, 'adjust'));
+      try {
+        fs.copyFileSync(path.join(user_dir, 'plan'), path.join(user_dir, 'adjust'));
+      }
+      catch (err) {
+        console.log(err);
+      }
     }
   }
 
@@ -294,11 +309,19 @@ router.post('/get-events', function(req, res, next){
       var user_info_path = __dirname + '/../public/users';
 
       var readEventFromFile = function() {
-        fs.readFile(path + filename, function(err, data) {
-          if(err)
-            res.end(err.toString());
-          res.end(data);
-        });
+        if (requested_time == 'now')
+          fs.readFile(path + filename, function(err, data) {
+            if(err)
+              res.end(err.toString());
+            res.end(data);
+          });
+        else if (requested_time == 'past') {
+          src = fs.createReadStream(path + filename);
+          src.pipe(res);
+        }
+        else {
+          res.end("Clients need to specify requested_time.");
+        }
       };
       var addUserIfNotExist = function(uid, name) {
         fs.readFile(user_info_path, function(err, data) {
@@ -320,18 +343,28 @@ router.post('/get-events', function(req, res, next){
         });
       };
 
-      // create directory for user
-      fs.mkdir(path, 0744, function(err) {
-        if (err) {
-          if (err.code == 'EEXIST') readEventFromFile(); // ignore the error if the folder already exists
-          else console.log(err);
-        }
-        else { // user signed in for the 1st time
-          readEventFromFile();
-        }
-      });
-      if (typeof(requested_uid) == 'undefined' && requested_time == 'now')
+      if (typeof(requested_uid) == 'undefined' && requested_time == 'now') {
+        // create directory for user
+        fs.mkdir(path, 0744, function(err) {
+          if (err) {
+            if (err.code == 'EEXIST') readEventFromFile(); // ignore the error if the folder already exists
+            else console.log(err);
+          }
+          else { // user signed in for the 1st time
+            readEventFromFile();
+          }
+        });
         addUserIfNotExist(uid, name);
+      }
+      else if (requested_time == 'now') {
+        readEventFromFile();
+      }
+      else if (requested_time == 'past') {
+
+      }
+      else {
+        console.log('Error in get-events');
+      }
     }).catch(function(error) {
       res.send(error.toString() + '. Failed to verify user.');
     });

@@ -59,6 +59,8 @@ block main-display-body
                 color = '#FF3C33';  // red
               else if (d.className == 'past-adjust')
                 color = '#2ECB4B';  // green
+              else if (d.className == 'now')
+                color = '#3A87AD';  // blue
               else {
                 // TODO: error occur
                 color = '#EC9600';  // orange
@@ -68,7 +70,8 @@ block main-display-body
                 description: d.description,
                 start: d.start,
                 end: d.end,
-                color: color
+                color: color,
+                className: d.className
               }];
               $('#calendar').fullCalendar('addEventSource', event_source);
             }
