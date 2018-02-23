@@ -65,7 +65,7 @@ initApp = function() {
             console.log(location.host);
             user.getIdToken().then(function(accessToken) {
               access_token = accessToken;
-              $.get('http://' + location.host + '/get_events',
+              $.post('http://' + location.host + '/get_events',
                     {access_token: access_token}, 
                     function(data) {
                       console.log(data);

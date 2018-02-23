@@ -2,7 +2,7 @@ script.
   // globals
   var clicked_date = null;
   var clicked_event = null;
-  var isClicked = false;
+  var isClicked = false;    // workaround to change dayclick to double click triggered event
 
   $(document).ready(function() {
     $('#calendar').fullCalendar({
@@ -73,7 +73,7 @@ script.
         setTimeout(function(){
           isClicked = false;
         }, 250);
-				
+      
       },
       eventClick: function(calEvent, jsEvent, view) {
         clicked_event = calEvent;
@@ -83,11 +83,10 @@ script.
       },
       eventAfterRender: function(view, ele) {
         $('.fc-scroller').css('height', 'auto');
-        console.log('viewRender');
       },
       eventDrop: function(event, delta, revertFunc) {
         source = event.source.rawEventDefs[0];
-        console.log(event.end._d.toGMTString());
+        // console.log(event.end._d.toGMTString());
         new_end = moment.utc(event.end._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
         source.end = new_end;
         new_start = moment.utc(event.start._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
@@ -95,7 +94,6 @@ script.
 
         $('#calendar').fullCalendar('updateEvent', event);
         event_sources = $('#calendar').fullCalendar('getEventSources');
-        console.log(event_sources);
       },
       eventResize: function(event) {
         source = event.source.rawEventDefs[0];
@@ -107,12 +105,10 @@ script.
 
         $('#calendar').fullCalendar('updateEvent', event);
         event_sources = $('#calendar').fullCalendar('getEventSources');
-        console.log(event_sources);
-        
       },
       events: [],
     });
-    $('.fc-scroller').css('height', 'auto');
+    setTimeout(function(){$('.fc-scroller').css('height', 'auto');}, 500);
   });
 
 html
