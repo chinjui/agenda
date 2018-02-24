@@ -49,7 +49,7 @@ router.post('/add-events', function(req, res, next) {
         }
         else addEventToFile(); // successfully created folder
       });
-      res.send('You uid is: ' + uid);
+      res.send('週日程表更新成功');
     }).catch(function(error) {
       res.send(error.toString() + '. Failed to verify user.');
     });

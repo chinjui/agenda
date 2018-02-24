@@ -45,8 +45,7 @@ block main-display-body
         function(data) {
           try {
             if (data == 'You are not an admin!') {
-              console.log("You are not an admin! Redirect to " + location.host);
-              window.location.assign(location.host);
+              alert("You are not an admin!");
               return ;
             }
             data = JSON.parse(data);
