@@ -6,31 +6,37 @@ block calendar-handler
 block main-display-body
   div.container.wrapper.calendar-container
     // form to select which user to see
-    form(id='select-user', class='form-inline')
-      input(list='user-names', name='user-name', id='user-name', class='form-control mr-sm-1')
-      datalist#user-names
-      input(type='submit', value='確認', class='btn btn-outline-success')
+    .dropdown
+      button#select-user.btn.btn-outline-success.dropdown-toggle(type='button',
+                                                                        data-toggle='dropdown', 
+                                                                        aria-haspopup='true', 
+                                                                        aria-expanded='false')
+        | 選擇 
+      .dropdown-menu(id='user-names', aria-labelledby='dropdownMenuButton')
+
     hr
     // calendar
     div#calendar.fc
 
   // onSubmit form
   script.
-    $('#select-user').on('submit', function(event) {
+    $('#user-names').on('click', function(event) {
       event.preventDefault(); 
+      selected_name = $(event.target).text();
 
       // clean calendar
       $('#calendar').fullCalendar('removeEvents');
-      
+
       // get uid based on user name
       requested_uid = null;
       for (var key in users) {
-        if (users[key] == $('#user-name').val())
+        if (users[key] == selected_name)
           requested_uid = key;
       }
-      $('#user-name').val("");
+      $('#select-user').html(selected_name);
       if (requested_uid == null) {
-        console.log("Cannot find matched uid");
+        console.log("Cannot find matched uid for name " + selected_name);
+        return;
       }
 
       // get selected user's calendar
@@ -81,7 +87,7 @@ block onAuthStateChanged
                 data = JSON.parse(data);
                 users = data;
                 for (var key in data) {
-                  $('#user-names').append('\<option value="' + data[key] + '">');
+                  $('#user-names').append('\<a class="dropdown-item dropdown-users", href="#">' + data[key] + '\<a>');
                 }
               }
               catch (err) {

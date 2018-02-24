@@ -108,7 +108,8 @@ router.post('/get-events', function(req, res, next){
           readEventFromFile();
         }
       });
-      addUserIfNotExist(uid, name);
+      if (typeof(requested_uid) == 'undefined')
+        addUserIfNotExist(uid, name);
     }).catch(function(error) {
       res.send(error.toString() + '. Failed to verify user.');
     });
