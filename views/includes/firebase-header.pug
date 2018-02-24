@@ -32,7 +32,14 @@ script(type='text/javascript').
   },
   signInOptions: [
   // Leave the lines as is for the providers you want to offer your users.
-  firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+  {
+    provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+    customParameters: {
+      // Forces account selection even when one account
+      // is available.
+      prompt: 'select_account'
+    }
+  },  
   firebase.auth.FacebookAuthProvider.PROVIDER_ID,
   firebase.auth.TwitterAuthProvider.PROVIDER_ID,
   firebase.auth.EmailAuthProvider.PROVIDER_ID,
@@ -92,8 +99,11 @@ block onAuthStateChanged
         $('.user-image').attr("src", photoURL);
         $('.user-name').html(displayName);
         $('.sign-out-button').on('click', function(event) {
-          firebase.auth().signOut();
-          ui.start('#firebaseui-auth-container', uiConfig);
+          firebase.auth().signOut().then(function() {
+            ui.start('#firebaseui-auth-container', uiConfig);
+          }).catch(function(error) {
+              console.log("Sign out error");
+          });
         });
         new_user_info.show();
         console.log("User signed in");
