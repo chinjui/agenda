@@ -22,6 +22,92 @@ router.get('/admin', function(req, res, next) {
   res.render('admin', {title: 'Admin Page'});
 });
 
+router.post('/get-comment', function(req, res, next) {
+  var access_token = req.body['access_token'];
+
+  // verify user
+  admin.auth().verifyIdToken(access_token)
+    .then(function(decodedToken) {
+      var uid = decodedToken.uid;
+      var name = decodedToken.name;
+      var path = __dirname + '/../data/agendas/' + uid + '/comment';
+
+      fs.readFile(path, function(err, data) {
+        if(err) {
+          console.log(err.toString());
+          res.end("");
+        }
+        else
+          res.end(data);
+      });
+
+    }).catch(function(error) {
+      res.send(error.toString() + '. Failed to verify user.');
+    });
+});
+
+router.post('/add-comment', function(req, res, next) {
+  var access_token = req.body['access_token'];
+  var requested_uid = req.body['requested_uid'];
+  var comment = req.body['comment'];
+
+  // verify user
+  admin.auth().verifyIdToken(access_token)
+    .then(function(decodedToken) {
+      var uid = decodedToken.uid;
+      var name = decodedToken.name;
+      var path = __dirname + '/../data/agendas/' + requested_uid + '/comment';
+
+      if (admin_uid != uid) {
+        res.end('You are not an admin!');
+        return;
+      }
+
+      fs.writeFile(path, comment, function(err) {
+        if(err)
+          res.end(err.toString());
+        else
+          res.end('評語添加成功');
+      });
+
+    }).catch(function(error) {
+      res.send(error.toString() + '. Failed to verify user.');
+    });
+});
+
+router.post('/change-name', function(req, res, next) {
+  var access_token = req.body['access_token'];
+  var new_name = req.body['new_name'];
+
+  // verify user
+  admin.auth().verifyIdToken(access_token)
+    .then(function(decodedToken) {
+      var uid = decodedToken.uid;
+      var name = decodedToken.name;
+      var path = __dirname + '/../public/users';
+
+      fs.readFile(path, function(err, data) {
+        if(err)
+          res.end(err.toString());
+        else {
+          data = JSON.parse(data);
+          data[uid] = new_name;
+
+          fs.writeFile(path, JSON.stringify(data), function(err) {
+            if(err)
+              res.end(err.toString());
+            else
+              res.end('使用者名字更新成功');
+          });
+
+        }
+      });
+
+    }).catch(function(error) {
+      res.send(error.toString() + '. Failed to verify user.');
+    });
+});
+
 router.post('/add-events', function(req, res, next) {
   var access_token = req.body['access_token'];
   var events_str = req.body['events'];

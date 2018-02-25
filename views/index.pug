@@ -11,6 +11,8 @@ html(lang="en")
     link(rel="stylesheet", href="stylesheets/style.css")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js")
     include includes/firebase-header.pug
+    script.
+      $.fn.editable.defaults.mode = 'inline';
   body
     nav.navbar.navbar-toggleable-md.navbar-inverse.bg-inverse
       // collapse button
@@ -19,16 +21,13 @@ html(lang="en")
 
       // brand, title and user info
       a.navbar-brand(href="#")
-        img(id='web-logo', src='#', height="36", width="36")
+        img(id='web-logo', src='images/logo-grey.png', height="36", width="36")
       #user-info-container.collapse.navbar-collapse
         ul.navbar-nav.mr-auto
           li.nav-item.active
             a.nav-link(href="#", class="mt-2.mt-md-0")
               | 新竹大專得勝訓練 
               span.sr-only (current)
-
-      script.
-        $('#web-logo').attr("src", "http://" + location.host + '/images/logo-grey.png');
 
       // sign in modal
       div(class="modal fade", id="signin-modal")
@@ -45,6 +44,9 @@ html(lang="en")
     block main-display-body
       // calendar
       div.container.wrapper.calendar-container
+        div#comment-container.alert.alert-danger.alert-dismissible(style='display: none;')
+          button(type="button", class="close", data-dismiss="alert") &times;
+          div#comment
         div#calendar.fc
         
     //
@@ -62,6 +64,6 @@ html(lang="en")
     ul(class="navbar-nav ml-auto mt-2 mt-md-0", id="user-info", style='display:none')
       li(class="nav-item")
         img(width="32", height="32", class="rounded-circle nav-item user-image", style="margin-right: 5px")
-        span(class="navbar-text text-center user-name")
+        span(class="navbar-text text-center user-name", contenteditable="true")
         span(class="vavbar-text text-center space") &nbsp
         button(class="btn btn-danger nav-item sign-out-button ml-auto", style="float: right;") 登出

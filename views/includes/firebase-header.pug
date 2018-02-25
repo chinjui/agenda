@@ -54,6 +54,7 @@ script(type='text/javascript').
 block onAuthStateChanged 
   script.
     var access_token = null;
+    var user_name = null;
     initApp = function() {
       firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
@@ -65,6 +66,21 @@ block onAuthStateChanged
         var uid = user.uid;
         var phoneNumber = user.phoneNumber;
         var providerData = user.providerData;
+        
+        // get user name 
+        $.get('http://' + location.host + '/users',
+          null,
+          function(data) {
+            console.log(data);
+            try {
+              data = JSON.parse(data);
+              user_name = data[uid];
+              $('.user-name').html(user_name);
+            }
+            catch (err) {
+              console.log(err, data);
+            }
+        });
         
         user.getIdToken().then(function(accessToken) {
           access_token = accessToken;
@@ -89,7 +105,16 @@ block onAuthStateChanged
                 console.log(data);
               }
             });
-          }, null, '  ');
+          
+          $.post('http://' + location.host + '/get-comment',
+            {access_token: access_token},
+            function(data) {
+              if (data != "") {
+                $('#comment-container').show();
+                $('#comment').html(data);
+              }
+            });
+        }, null, '  ');
         
         // append user info & sign out button
         $('#sign-in-button').remove();
@@ -97,7 +122,15 @@ block onAuthStateChanged
         new_user_info.attr("id", "user-info-instance")
           .appendTo("#user-info-container");
         $('.user-image').attr("src", photoURL);
-        $('.user-name').html(displayName);
+        // $('.user-name').html(displayName);
+        $('.user-name').blur(function(){
+          console.log("blur");
+          $.post('http://' + location.host + '/change-name',
+            {access_token: access_token, new_name: $('.user-name').html()},
+            function(data) {
+              alert(data);
+            });
+        }); 
         $('.sign-out-button').on('click', function(event) {
           firebase.auth().signOut().then(function() {
             ui.start('#firebaseui-auth-container', uiConfig);

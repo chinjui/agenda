@@ -2,6 +2,10 @@ body {
   overflow-x: hidden;
   word-wrap: break-word;
 }
+#comment-container {
+  white-space:pre-wrap !important;
+  width: 100%;
+}
 .calendar-container {
   margin: 40px 5%;
   padding: 0;
