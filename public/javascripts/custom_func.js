@@ -16,11 +16,11 @@ var get_time_limit = function() {
   return [plan_begin, plan_end, adjust_end];
 };
 
-function count_overcomer_time(begin_time, phrases, events, className='now') {
+function count_overcomer_time(begin_time, phrases, events, className='past') {
   // begin_time:  moment object, begining of the week to be counted
   // phrases:     An array like ['讀聖經', '傳福音', '個人禱告', '家聚會']
   // events:      An array containing fullcalendar events
-  // className:   'past' or 'now'
+  // className:   'past' or 'now' (now is an useless argument)
 
   // current calendar start and end time
   begin_time.startOf('day');
@@ -31,9 +31,9 @@ function count_overcomer_time(begin_time, phrases, events, className='now') {
   for (var i = 0; i < events.length; i ++) {
     if (typeof(events[i]) == 'undefined')
       break;
-    var same_class_name = (events[i].className.substring(0, 3) == className.substring(0, 3));
+    //var same_class_name = (events[i].className.substring(0, 3) == className.substring(0, 3));
     var valid_date = (moment(events[i].start).isBetween(begin_time, end_time));
-    if (same_class_name && valid_date)
+    if (valid_date)
       valid_events.push(events[i]);
   }
 
@@ -79,6 +79,6 @@ function count_overcomer_time(begin_time, phrases, events, className='now') {
         counts[key] += interval;
     }
   }
-  console.log(JSON.stringify(counts, undefined, 2));
+
   return JSON.stringify(counts, undefined, 2);
 }

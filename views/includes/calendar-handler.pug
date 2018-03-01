@@ -12,7 +12,6 @@ script.
                        '標題包含`讀聖經`、`傳福音`、`家聚會`、`個人禱告`會累計時數給服事者查看，請勿使用其他描述。如`讀經`。可使用`狂讀聖經一卷`。';
 
   // event.className: 'past-plan', 'past-adjust', 'now'
-  
   $(document).ready(function() {
     $('#calendar').fullCalendar({
       customButtons: {
@@ -21,7 +20,6 @@ script.
           click: function() {
             event_sources = $('#calendar').fullCalendar('getEventSources');
             raw_events = [];
-            console.log(event_sources);
             for (i = 1; i < event_sources.length; i++) {
               event_source = event_sources[i]['rawEventDefs'][0];
               
@@ -40,6 +38,27 @@ script.
             );
           }
         },
+        statistic: {
+          text: '統計',
+          click: function() {
+            // count overcomer words
+            event_sources = $('#calendar').fullCalendar('getEventSources');
+            console.log(event_sources);
+            raw_events = [];
+            for (i = 1; i < event_sources.length; i++) {
+              event_source = event_sources[i]['rawEventDefs'][0];
+              raw_events.push(event_source);
+            }
+            agenda_day = $('#calendar').fullCalendar('getDate');
+            agenda_day.startOf('day');
+            if (agenda_day.day() != 6)
+              agenda_day.day(-1);
+            phrases = ['讀聖經', '傳福音', '個人禱告', '家聚會'];
+            agenda_end_day = agenda_day.clone().add(7, 'days');
+            count_result = count_overcomer_time(agenda_day, phrases, raw_events, className='past');
+            $('.fc-statistic-button').attr({'data-content': count_result});
+          }
+        },
         cancel_modification: {
           text: '復原',
           click: function() {
@@ -55,7 +74,7 @@ script.
       header: {
         left: 'title',
         center: '',
-        right: 'helper today prev,next'
+        right: 'statistic helper today prev,next'
       },
       footer: {
         center: 'add_events cancel_modification',
@@ -82,6 +101,8 @@ script.
           function(index){
           return moment( $(this).data('date') ).isBefore(moment(),'day')
         }).addClass('date-in-past');
+
+        // set popover property and content 
         $('.fc-helper-button').attr({'data-container': 'body',
                                  'title': '說明',
                                  'data-toggle': 'popover',
@@ -89,7 +110,14 @@ script.
                                  //'data-trigger': 'focus',
                                  'data-placement': 'bottom',
                                  'data-content': helper_content});
+        $('.fc-statistic-button').attr({'data-container': 'body',
+                                 'title': '單位: 小時',
+                                 'data-toggle': 'popover',
+                                 'data-trigger': 'click',
+                                 //'data-trigger': 'focus',
+                                 'data-placement': 'bottom'});
         $('[data-toggle="popover"]').popover();
+          
       },
       dayClick: function(date, jsEvent, view) {
         if(isClicked){
@@ -118,6 +146,7 @@ script.
       },
       eventAfterRender: function(view, ele) {
         $('.fc-scroller').css('height', 'auto');
+        
       },
       eventDrop: function(event, delta, revertFunc) {
         source = event.source.rawEventDefs[0];
@@ -181,8 +210,6 @@ script.
   $('#event-query-modal button').on('click', function(event) {
     if (this.id == 'confirm-add-event') {
       [plan_begin, plan_end, adjust_end] = get_time_limit();
-      console.log('plan_begin, plan_end, adjust_end: ', plan_begin.toString(), plan_end.toString(), adjust_end.toString());
-      console.log('clicked: ', clicked_date.toString());
       if (clicked_date.isBefore(plan_end)) {
         alert("已過行事曆不可更改");
         return;
