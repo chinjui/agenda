@@ -133,7 +133,7 @@ function begin_adjust() {
   _status = 'adjust';
 };
 begin_adjust_schedule = new cron.CronJob({
-  cronTime: '0 0 * * 6',
+  cronTime: '0 1 * * 6',
   onTick: begin_adjust,
   start: true,
   timeZone: 'Asia/Taipei'
