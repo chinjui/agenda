@@ -6,10 +6,17 @@ script.
 
   $(document).ready(function() {
     $('#calendar').fullCalendar({
+      customButtons: {
+        helper: {
+        }
+      },
+      themeButtonIcons: {
+        helper: 'help'
+      },
       header: {
         left: 'title',
         center: '',
-        right: 'today prev,next'
+        right: 'helper today prev,next'
       },
       footer: {
         center: 'add_events cancel_modification',
@@ -36,6 +43,12 @@ script.
           function(index){
           return moment( $(this).data('date') ).isBefore(moment(),'day')
         }).addClass('date-in-past');
+        $('.fc-helper-button').attr({'data-container': 'body',
+                                 'title': '累計時數（小時）',
+                                 'data-toggle': 'popover',
+                                 'data-trigger': 'focus',
+                                 'data-placement': 'bottom'});
+        $('[data-toggle="popover"]').popover();
       },
       eventClick: function(calEvent, jsEvent, view) {
         clicked_event = calEvent;

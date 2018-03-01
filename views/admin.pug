@@ -75,9 +75,18 @@ block main-display-body
               }];
               $('#calendar').fullCalendar('addEventSource', event_source);
             }
+
+            // count overcomer words
+            agenda_day = $('#calendar').fullCalendar('getDate');
+            agenda_day.startOf('day');
+            if (agenda_day.day() != 6)
+              agenda_day.day(-1);
+            phrases = ['讀聖經', '傳福音', '個人禱告', '家聚會'];
+            count_result = count_overcomer_time(agenda_day, phrases, data, className='past');
+            $('.fc-helper-button').attr({'data-content': count_result});
           }
           catch (err) {
-            console.log(data);
+            console.log(data, err);
           }
         });
     });
