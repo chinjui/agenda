@@ -3,6 +3,7 @@ script.
   var clicked_date = null;
   var clicked_event = null;
   var isClicked = false;    // workaround to change dayclick to double click triggered event
+  var isClicked_event = false;  // for eventclick
   var plan_color = '#FF3C33';
   var adjust_color = '#2ECB4B';
   var helper_content = '週五 18:00 - 24:00 可以安排下一週的規劃表。\n\n' + 
@@ -134,15 +135,19 @@ script.
       
       },
       eventClick: function(calEvent, jsEvent, view) {
-        clicked_event = calEvent;
-        $('#header-event-title').text(calEvent.title);
-        $('#body-event-description').text(calEvent.description);
-        console.log(calEvent.editable);
-        // if (calEvent.editable == true)
-        //   $('#delete-event').attr('style', '');
-        // else
-        //   $('#delete-event').attr('style', 'display: none;');
-        $('#event-show-modal').modal('show');
+        if(isClicked_event){
+          clicked_event = calEvent;
+          $('#header-event-title').text(calEvent.title);
+          $('#body-event-description').text(calEvent.description);
+          $('#event-show-modal').modal('show');
+          isClicked_event = false;
+        }
+        else{
+          isClicked_event = true;
+        }
+        setTimeout(function(){
+          isClicked_event = false;
+        }, 250);
       },
       eventAfterRender: function(view, ele) {
         $('.fc-scroller').css('height', 'auto');

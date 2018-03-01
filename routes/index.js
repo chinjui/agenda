@@ -175,7 +175,7 @@ router.post('/get-comment', function(req, res, next) {
       });
 
     }).catch(function(error) {
-      res.send(error.toString() + '. Failed to verify user.');
+      res.end(error.toString() + '. Failed to verify user.');
     });
 });
 
@@ -315,8 +315,10 @@ router.post('/get-events', function(req, res, next){
       var readEventFromFile = function() {
         if (requested_time == 'now')
           fs.readFile(path + filename, function(err, data) {
-            if(err)
+            if(err) {
               res.end(err.toString());
+              return;
+            }
             res.end(data);
           });
         else if (requested_time == 'past') {
@@ -332,7 +334,7 @@ router.post('/get-events', function(req, res, next){
         fs.readFile(user_info_path, function(err, data) {
           if (err) {
             console.log(err);
-            users = {};
+            return;
           }
           users = JSON.parse(data);
           if (!users.hasOwnProperty(uid)) {
