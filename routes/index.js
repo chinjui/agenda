@@ -88,7 +88,6 @@ function begin_new_round() {
         adjust[j].className = 'past-adjust';
         past.push(adjust[j]);
       }
-      console.log('past: ', past);
 
       // write to past
       try {fs.writeFileSync(path.join(user_dir, 'past'), JSON.stringify(past));} catch (err) {console.log(err);}
@@ -322,7 +321,8 @@ router.post('/get-events', function(req, res, next){
           });
         else if (requested_time == 'past') {
           src = fs.createReadStream(path + filename);
-          src.pipe(res);
+          src.on('error', (err) => {console.log(err); res.end("No past file found.");})
+            .pipe(res).on('error', (err) => {console.log(err); res.end('No past file found.');});
         }
         else {
           res.end("Clients need to specify requested_time.");

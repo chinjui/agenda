@@ -7,7 +7,8 @@ script.
   var adjust_color = '#2ECB4B';
   var helper_content = '週五 18:00 - 24:00 可以安排下一週的規劃表。\n\n' + 
                        '週六 00:00 - 下週五 18:00 可以增加與規劃表不同之部分。\n\n' + 
-                       '每週五 18:00 後可以查看上一輪規劃表與實際完成之差別。\n\n' + 
+                       '每週五 18:00 後可以查看上一輪規劃表與實際完成之差別。\n\n' +
+                       '查看已過行程表時，計畫為紅色，更動為綠色。\n\n' + 
                        '標題包含`讀聖經`、`傳福音`、`家聚會`、`讀書報`會累計時數給服事者查看，請勿使用其他描述。如`讀經`。可使用`狂讀聖經一卷`。';
 
   // event.className: 'past-plan', 'past-adjust', 'now'
@@ -131,9 +132,9 @@ script.
       },
       eventResize: function(event) {
         source = event.source.rawEventDefs[0];
-        new_end = moment.utc(event.end._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
+        new_end = moment(event.end._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
         source.end = new_end;
-        new_start = moment.utc(event.start._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
+        new_start = moment(event.start._d.toGMTString()).format('YYYY-MM-DDTHH:mm:ss');
         source.start = new_start;
 
         $('#calendar').fullCalendar('updateEvent', event);
@@ -183,7 +184,7 @@ script.
       [plan_begin, plan_end, adjust_end] = get_time_limit();
       console.log('plan_begin, plan_end, adjust_end: ', plan_begin.toString(), plan_end.toString(), adjust_end.toString());
       console.log('clicked: ', clicked_date.toString());
-      if (clicked_date.isBefore(plan_begin)) {
+      if (clicked_date.isBefore(plan_end)) {
         alert("已過行事曆不可更改");
         return;
       }
