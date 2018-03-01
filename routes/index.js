@@ -2,10 +2,124 @@ var express = require('express');
 var router = express.Router();
 var admin = require('firebase-admin');
 var fs = require('fs');
+var path = require('path');
+var schedule = require('node-schedule');
+var moment = require('moment');
 
 var serviceAccount = require('../week-calendar-194609-firebase-adminsdk-o53vz-a2d31d8bc9.json');
-
 var admin_uid = "g3zIfkYXPuSSfCAM6ehVdISESOl2";
+
+
+function get_status(now=null) {
+  if (now == null)
+    now = moment();
+  friday_6pm = now.clone().day(5).startOf('day').hour(18);
+  saturday_end = now.clone().endOf('week');
+  if (now.isBetween(friday_6pm, saturday_end)) {
+    plan_begin = friday_6pm;
+    plan_end = plan_begin.clone().endOf('day');
+    adjust_end = friday_6pm.clone().add(7, 'days');
+  }
+  else {
+    plan_begin = friday_6pm.clone().add(-7, 'days');
+    plan_end = plan_begin.clone().endOf('day');
+    adjust_end = friday_6pm.clone();
+  }
+
+  if (now.isBefore(plan_end))
+    return 'plan';
+  else
+    return 'adjust';
+};
+
+// 'plan' or 'adjust'
+var _status = get_status();
+
+// round_end_time: time to `merge plan and adjust to past`, a new round begin
+// plan_end_time: tiem to `copy plan to adjust`, plan ends
+var round_end_time = new Date(moment().startOf('day').day(5).hour(18).toString());
+if (moment().isAfter(round_end_time))
+  round_end_time.add(7, 'days');
+var plan_end_time = new Date(moment().startOf('day').day(6).hour(1).toString());
+if (moment().isAfter(plan_end_time))
+  plan_end_time.add(7, 'days');
+
+/* merge schedule */
+var begin_new_round_schedule = null;
+function begin_new_round() {
+  _status = 'merging';
+  console.log('Begin to merge `plan` and `adjust`.');
+
+  // merge
+  agendas_dir = './data/agendas';
+  user_dirs = fs.readdirSync(agendas_dir);
+  for (var i = 0; i < user_dirs.length; i ++) {
+    if (user_dirs[i][0] != '.') {   // if is a normal file
+      user_dir = path.join(agendas_dir, user_dirs[i]);
+      var past = JSON.parse(fs.readFileSync(path.join(user_dir, 'past')));
+      var plan = JSON.parse(fs.readFileSync(path.join(user_dir, 'plan')));
+      var adjust = JSON.parse(fs.readFileSync(path.join(user_dir, 'adjust')));
+
+      // add plan to past
+      // if the same event appears in adjust, delete it
+      for (var j = 0; j < plan.length; j ++) {
+        for (var k = 0; k < adjust.length; k ++) {
+          if (typeof(adjust[k]) != 'undefined') {
+            if (plan[j].title == adjust[k].title &&
+                plan[j].start == adjust[k].start &&
+                plan[j].end   == adjust[k].end) {
+              adjust.splice(k, 1);
+              break;
+            }
+          }
+        }
+
+        plan[j].className = 'past-plan';
+        past.push(plan[j]);
+      }
+
+      // add remaining adjust to past
+      for (var j = 0; j < adjust.length; j ++) {
+        adjust[j].className = 'past-adjust';
+        past.push(adjust[j]);
+      }
+
+      // delete plan and adjust file
+      // let both files be created when users need them
+      fs.unlinkSync(path.join(user_dir, 'plan'));
+      fs.uniinkSync(path.join(user_dir, 'adjust'));
+    }
+  }
+
+  console.log('Finished merging');
+  _status = 'plan';
+  begin_new_round_schedule = schedule.scheduleJob(round_end_time.setDate(round_end_time.getDate() + 7),
+                                                  begin_new_round);
+};
+begin_new_round_schedule = schedule.scheduleJob(round_end_time, begin_new_round);
+
+/* copy schedule */
+var begin_adjust_schedule;
+function begin_adjust() {
+  _status = 'copying';
+  console.log('Begin to copy `plan` to `adjust`.');
+
+  // copy
+  agendas_dir = './data/agendas';
+  user_dirs = fs.readdirSync(agendas_dir);
+  for (var i = 0; i < user_dirs.length; i ++) {
+    if (user_dirs[i][0] != '.') {   // if is a normal file
+      user_dir = path.join(agendas_dir, user_dirs[i]);
+      fs.copyFileSync(path.join(user_dir, 'plan'), path.join(user_dir, 'adjust'));
+    }
+  }
+
+  console.log('Finished copying');
+  _status = 'adjust';
+  begin_adjust_schedule = schedule.scheduleJob(plan_end_time.setDate(plan_end_time.getDate() + 7), begin_adjust);
+};
+begin_adjust_schedule = schedule.scheduleJob(plan_end_time, begin_adjust);
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -111,6 +225,11 @@ router.post('/change-name', function(req, res, next) {
 router.post('/add-events', function(req, res, next) {
   var access_token = req.body['access_token'];
   var events_str = req.body['events'];
+  var now = moment();
+
+  // set filename
+  var filename = '/' + _status;   // '/plan' or '/adjust'
+
   // verify user
   admin.auth().verifyIdToken(access_token)
     .then(function(decodedToken) {
@@ -118,12 +237,16 @@ router.post('/add-events', function(req, res, next) {
       var name = decodedToken.name;
       var path = __dirname + '/../data/agendas/' + uid;
 
+      // verify time of added events
+      // TODO
+
       var addEventToFile = function() {
-        fs.writeFile(path + '/today', events_str, function(err) {
+        fs.writeFile(path + filename, events_str, function(err) {
           if(err) {
             return console.log(err);
           }
-          console.log(path + "/today  was saved!");
+          console.log(path + filename +  "  was saved!");
+          res.end("週日程表更新成功");
         });
       };
 
@@ -135,15 +258,26 @@ router.post('/add-events', function(req, res, next) {
         }
         else addEventToFile(); // successfully created folder
       });
-      res.send('週日程表更新成功');
     }).catch(function(error) {
-      res.send(error.toString() + '. Failed to verify user.');
+      res.end(error.toString() + '. Failed to verify user.');
     });
 });
 
 router.post('/get-events', function(req, res, next){
   var access_token = req.body['access_token'];
   var requested_uid = req.body['requested_uid'];
+  var requested_time = req.body['requested_time'];
+
+  // set filename
+  var filename;
+  if (requested_time == 'now')
+    filename = '/' + _status;   // '/plan' or '/adjust'
+  else if (requested_time == 'past')
+    filename = '/past';         // '/past'
+  else {
+    res.end('Client needs to specify the entry: `requested_time`');
+    return;
+  }
 
   // verify user
   admin.auth().verifyIdToken(access_token)
@@ -160,7 +294,7 @@ router.post('/get-events', function(req, res, next){
       var user_info_path = __dirname + '/../public/users';
 
       var readEventFromFile = function() {
-        fs.readFile(path + '/today', function(err, data) {
+        fs.readFile(path + filename, function(err, data) {
           if(err)
             res.end(err.toString());
           res.end(data);
@@ -168,8 +302,10 @@ router.post('/get-events', function(req, res, next){
       };
       var addUserIfNotExist = function(uid, name) {
         fs.readFile(user_info_path, function(err, data) {
-          if (err)
+          if (err) {
             console.log(err);
+            users = {};
+          }
           users = JSON.parse(data);
           if (!users.hasOwnProperty(uid)) {
             console.log('name: ' + name + ', '+ uid);
@@ -194,11 +330,12 @@ router.post('/get-events', function(req, res, next){
           readEventFromFile();
         }
       });
-      if (typeof(requested_uid) == 'undefined')
+      if (typeof(requested_uid) == 'undefined' && requested_time == 'now')
         addUserIfNotExist(uid, name);
     }).catch(function(error) {
       res.send(error.toString() + '. Failed to verify user.');
     });
 
 });
+
 module.exports = router;

@@ -78,36 +78,31 @@ block onAuthStateChanged
             }
             catch (err) {
               console.log(err, data);
+              $('.user-name').html(displayName);
             }
         });
         
         user.getIdToken().then(function(accessToken) {
           access_token = accessToken;
           $.post('http://' + location.host + '/get-events',
-            {access_token: access_token},
+            {access_token: access_token, requested_time: 'now'},
             function(data) {
               try {
-                [plan_begin, plan_end, adjust_end] = get_time_limit();
-                var planning = moment().isBetween(plan_begin, plan_end);
                 data = JSON.parse(data);
                 for (var i = 0; i < data.length; i++) {
                   d = data[i];
-                  start_time = moment(d.start);
-                  var editable;
-                  if (start_time.isBefore(plan_begin))
-                    editable = false;
-                  else if (d.className == 'adjust') {
-                    editable = true;
-                  }
-                  else if (d.className == 'plan') {
-                    if (moment().isBetween(plan_begin, plan_end))
-                      editable = true;
-                    else 
-                      editable = false;
+                  if (d.className == 'past-plan')
+                    color = '#FF3C33';  // red
+                  else if (d.className == 'past-adjust')
+                    color = '#2ECB4B';  // green
+                  else if (d.className == 'now') {
+                    // client will only recieve className: 'now'
+                    // though it is in plan or adjust file
+                    color = '#3A87AD';  // blue
                   }
                   else {
-                    alert("Odd event.");
-                    return;
+                    // TODO: error occur
+                    color = '#EC9600';  // orange
                   }
 
                   var event_source = [{
@@ -115,9 +110,8 @@ block onAuthStateChanged
                     description: d.description,
                     start: d.start,
                     end: d.end,
-                    color: d.color,
+                    color: color,
                     className: d.className,
-                    editable: editable
                   }];
                   $('#calendar').fullCalendar('addEventSource', event_source);
                 }

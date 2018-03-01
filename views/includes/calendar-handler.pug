@@ -10,6 +10,8 @@ script.
                        '每週五 18:00 後可以查看規劃表與實際完成之差別。\n\n' + 
                        '標題包含`讀聖經`、`傳福音`、`家聚會`、`讀書報`會累計時數給服事者查看，請勿使用其他描述。如`讀經`。可使用`狂讀聖經一卷`。';
 
+  // event.className: 'past-plan', 'past-adjust', 'now'
+  
   $(document).ready(function() {
     $('#calendar').fullCalendar({
       customButtons: {
@@ -20,8 +22,18 @@ script.
             raw_events = [];
             console.log(event_sources);
             for (i = 1; i < event_sources.length; i++) {
-              raw_events.push(event_sources[i]['rawEventDefs'][0]);
+              event_source = event_sources[i]['rawEventDefs'][0];
+              
+              // only record events within current week
+              // TODO server also needs to check events for start, end time
+              if (event_source.className.substring(0, 3) == 'now')
+                raw_events.push(event_source);
             }
+            if (raw_events.length == 0) {
+              alert("尚未新增事項");
+              return;
+            }
+
             // send to server
             $.post('http://' + location.host + '/add-events',   // server url
                    {access_token: access_token, events: JSON.stringify(raw_events)},  // data in json format
@@ -85,6 +97,7 @@ script.
       dayClick: function(date, jsEvent, view) {
         if(isClicked){
           clicked_date = date;
+          console.log(date.format());
           $('#event-query-modal').modal('show');
           isClicked = false;
         }
@@ -172,7 +185,7 @@ script.
     if (this.id == 'confirm-add-event') {
       [plan_begin, plan_end, adjust_end] = get_time_limit();
 
-      if (clicked_date.isBefore(plan_end)) {
+      if (clicked_date.isBefore(plan_begin)) {
         alert("已過行事曆不可更改");
         return;
       }
@@ -180,27 +193,14 @@ script.
         alert("還不能編輯未來行事曆");
         return;
       }
-
-      if (now.isBetween(plan_begin, plan_end)) {
-        var color = plan_color; // red  
-        var className = 'plan';
-      }
-      else if (now.isBetween(plan_end, adjust_end)) {
-        var color = adjust_color; // green
-        var className = 'adjust';
-      }
-      else {
-        alert("Error: time is not between plan_begin & adjust_end. Please contact website administrator.");
-        return;
-      }
-
+      
       var event_source = [{
         title: $('#event_name').val(),
         description: $('#event_description').val(),
         start: clicked_date.format(),
         end: clicked_date.add(1, 'hours').format(),
         color: color,
-        className: className
+        className: 'now'
       }];
       $('#calendar').fullCalendar('addEventSource', event_source);
     }
@@ -209,7 +209,8 @@ script.
     $('#event_description').val("");
   });  
     
-  $('#event-show-modal button').on('click', function(event) {
+  $('#event-show-modal button').on('click', function(jsEvent) {
+    console.log(clicked_event.className);
     if (this.id == 'delete-event') {
       $('#calendar').fullCalendar('removeEventSource', clicked_event.source);
     }

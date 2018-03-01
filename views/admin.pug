@@ -45,7 +45,7 @@ block main-display-body
 
       // get selected user's calendar
       $.post('http://' + location.host + '/get-events',
-        {access_token: access_token, requested_uid: requested_uid},
+        {access_token: access_token, requested_uid: requested_uid, requested_time: 'past'},
         function(data) {
           try {
             if (data == 'You are not an admin!') {
@@ -55,12 +55,20 @@ block main-display-body
             data = JSON.parse(data);
             for (var i = 0; i < data.length; i++) {
               d = data[i];
+              if (d.className == 'past-plan')
+                color = '#FF3C33';  // red
+              else if (d.className == 'past-adjust')
+                color = '#2ECB4B';  // green
+              else {
+                // TODO: error occur
+                color = '#EC9600';  // orange
+              }
               var event_source = [{
                 title: d.title,
                 description: d.description,
                 start: d.start,
                 end: d.end,
-                color: d.color
+                color: color
               }];
               $('#calendar').fullCalendar('addEventSource', event_source);
             }
