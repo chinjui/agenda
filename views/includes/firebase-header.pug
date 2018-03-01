@@ -87,15 +87,37 @@ block onAuthStateChanged
             {access_token: access_token},
             function(data) {
               try {
+                [plan_begin, plan_end, adjust_end] = get_time_limit();
+                var planning = moment().isBetween(plan_begin, plan_end);
                 data = JSON.parse(data);
                 for (var i = 0; i < data.length; i++) {
                   d = data[i];
+                  start_time = moment(d.start);
+                  var editable;
+                  if (start_time.isBefore(plan_begin))
+                    editable = false;
+                  else if (d.className == 'adjust') {
+                    editable = true;
+                  }
+                  else if (d.className == 'plan') {
+                    if (moment().isBetween(plan_begin, plan_end))
+                      editable = true;
+                    else 
+                      editable = false;
+                  }
+                  else {
+                    alert("Odd event.");
+                    return;
+                  }
+
                   var event_source = [{
                     title: d.title,
                     description: d.description,
                     start: d.start,
                     end: d.end,
-                    color: d.color
+                    color: d.color,
+                    className: d.className,
+                    editable: editable
                   }];
                   $('#calendar').fullCalendar('addEventSource', event_source);
                 }

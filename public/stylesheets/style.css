@@ -20,7 +20,12 @@ body {
 ul > li {
     margin-right:5px;
 }
-
+.popover {
+  white-space: pre-wrap;    
+}
+.fc-helper-button {
+  border-radius: 50px;
+}
 /* change placeholder color for inputs */ 
 .form-control::-webkit-input-placeholder { 
   color: #D3D3D3;

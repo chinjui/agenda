@@ -3,6 +3,12 @@ script.
   var clicked_date = null;
   var clicked_event = null;
   var isClicked = false;    // workaround to change dayclick to double click triggered event
+  var plan_color = '#FF3C33';
+  var adjust_color = '#2ECB4B';
+  var helper_content = '週五 18:00 - 24:00 可以安排下一週的規劃表。\n\n' + 
+                       '週六 00:00 - 下週五 18:00 可以增加與規劃表不同之部分。\n\n' + 
+                       '每週五 18:00 後可以查看規劃表與實際完成之差別。\n\n' + 
+                       '標題包含`讀聖經`、`傳福音`、`家聚會`、`讀書報`會累計時數給服事者查看，請勿使用其他描述。如`讀經`。可使用`狂讀聖經一卷`。';
 
   $(document).ready(function() {
     $('#calendar').fullCalendar({
@@ -11,7 +17,8 @@ script.
           text: '確認更改',
           click: function() {
             event_sources = $('#calendar').fullCalendar('getEventSources');
-            raw_events = []
+            raw_events = [];
+            console.log(event_sources);
             for (i = 1; i < event_sources.length; i++) {
               raw_events.push(event_sources[i]['rawEventDefs'][0]);
             }
@@ -29,12 +36,19 @@ script.
           click: function() {
             location.reload();
           }
+        },
+        helper: {
+          click: function() {
+          }
         }
+      },
+      themeButtonIcons: {
+        helper: 'help'
       },
       header: {
         left: 'title',
         center: '',
-        right: 'today prev,next'
+        right: 'helper today prev,next'
       },
       footer: {
         center: 'add_events cancel_modification',
@@ -60,6 +74,13 @@ script.
           function(index){
           return moment( $(this).data('date') ).isBefore(moment(),'day')
         }).addClass('date-in-past');
+        $('.fc-helper-button').attr({'data-container': 'body',
+                                 'title': '說明',
+                                 'data-toggle': 'popover',
+                                 'data-trigger': 'focus',
+                                 'data-placement': 'bottom',
+                                 'data-content': helper_content});
+        $('[data-toggle="popover"]').popover();
       },
       dayClick: function(date, jsEvent, view) {
         if(isClicked){
@@ -79,6 +100,10 @@ script.
         clicked_event = calEvent;
         $('#header-event-title').text(calEvent.title);
         $('#body-event-description').text(calEvent.description);
+        if (calEvent.editable == true)
+          $('#delete-event').attr('style', '');
+        else
+          $('#delete-event').attr('style', 'display: none;');
         $('#event-show-modal').modal('show');
       },
       eventAfterRender: function(view, ele) {
@@ -145,34 +170,24 @@ html
 script.
   $('#event-query-modal button').on('click', function(event) {
     if (this.id == 'confirm-add-event') {
-      now = moment();
-      friday_6pm = now.clone().day(5).startOf('day').hour(18);
-      saturday_end = now.clone().endOf('week');
-      if (now.isBetween(friday_6pm, saturday_end)) {
-        plan_begin = friday_6pm;
-        plan_end = plan_begin.clone().endOf('day');
-        adjust_end = friday_6pm.clone().add(7, 'days');
-      }
-      else {
-        plan_begin = friday_6pm.clone().add(-7, 'days');
-        plan_end = plan_begin.clone().endOf('day');
-        adjust_end = friday_6pm.clone();
-      }
+      [plan_begin, plan_end, adjust_end] = get_time_limit();
 
       if (clicked_date.isBefore(plan_end)) {
         alert("已過行事曆不可更改");
         return;
       }
       else if (clicked_date.isAfter(adjust_end)) {
-        alert("未到可排程日期");
+        alert("還不能編輯未來行事曆");
         return;
       }
 
       if (now.isBetween(plan_begin, plan_end)) {
-        var color = '#FF3C33'; // red  
+        var color = plan_color; // red  
+        var className = 'plan';
       }
       else if (now.isBetween(plan_end, adjust_end)) {
-        var color = '#2ECB4B'; // green
+        var color = adjust_color; // green
+        var className = 'adjust';
       }
       else {
         alert("Error: time is not between plan_begin & adjust_end. Please contact website administrator.");
@@ -184,7 +199,8 @@ script.
         description: $('#event_description').val(),
         start: clicked_date.format(),
         end: clicked_date.add(1, 'hours').format(),
-        color: color
+        color: color,
+        className: className
       }];
       $('#calendar').fullCalendar('addEventSource', event_source);
     }
