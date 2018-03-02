@@ -1,5 +1,4 @@
 body {
-  overflow-x: hidden;
   word-wrap: break-word;
 }
 #comment-container {
@@ -7,15 +6,23 @@ body {
   width: 100%;
 }
 .calendar-container {
-  margin: 40px 5%;
-  padding: 0;
+  padding: 5% 5% 5% 5%;
   font-size: 14px;
+  width: 100%;
   max-width: 900px;
+  display: block;
+  overflow: auto;
+  min-width: 600px;
 }
 .date-in-past {
   background: #ccc;
   opacity: 0.3;
 }
+.scrollable {
+  display: block;
+  overflow: auto;
+}
+
 .navbar > button { float: right; }
 ul > li {
     margin-right:5px;
@@ -26,6 +33,7 @@ ul > li {
 .fc-helper-button {
   border-radius: 50px;
 }
+
 /* change placeholder color for inputs */ 
 .form-control::-webkit-input-placeholder { 
   color: #D3D3D3;

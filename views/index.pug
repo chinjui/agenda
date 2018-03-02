@@ -43,11 +43,12 @@ html(lang="en")
     
     block main-display-body
       // calendar
-      div.container.wrapper.calendar-container
-        div#comment-container.alert.alert-danger.alert-dismissible(style='display: none;')
-          button(type="button", class="close", data-dismiss="alert") &times;
-          div#comment
-        div#calendar.fc
+      div.scrollable
+        div.calendar-container
+          div#comment-container.alert.alert-danger.alert-dismissible(style='display: none;')
+            button(type="button", class="close", data-dismiss="alert") &times;
+            div#comment
+          div#calendar.fc
         
     //
       Bootstrap core JavaScript

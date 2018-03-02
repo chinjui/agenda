@@ -336,6 +336,7 @@ router.post('/get-events', function(req, res, next){
             console.log(err);
             return;
           }
+          console.log("data:", data);
           users = JSON.parse(data);
           if (!users.hasOwnProperty(uid)) {
             console.log('name: ' + name + ', '+ uid);

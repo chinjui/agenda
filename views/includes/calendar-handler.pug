@@ -6,11 +6,11 @@ script.
   var isClicked_event = false;  // for eventclick
   var plan_color = '#FF3C33';
   var adjust_color = '#2ECB4B';
-  var helper_content = '週五 18:00 - 24:00 可以安排下一週的規劃表。\n\n' + 
-                       '週六 00:00 - 下週五 18:00 可以增加與規劃表不同之部分。\n\n' + 
-                       '每週五 18:00 後可以查看上一輪規劃表與實際完成之差別。\n\n' +
-                       '查看已過行程表時，計畫為紅色，更動為綠色。\n\n' + 
-                       '標題包含`讀聖經`、`傳福音`、`家聚會`、`個人禱告`會累計時數給服事者查看，請勿使用其他描述。如`讀經`。可使用`狂讀聖經一卷`。';
+  var helper_content = '僅週五 18:00 - 24:00 可以安排下一週的行程表，此為預定計畫。\n\n' + 
+                       '週六 00:00 - 下週五 18:00 可以編輯原定行程表，此為實際完成事項。\n\n' + 
+                       '每週五 18:00 後可以查看已過一週預定計畫與實際完成事項之差別。\n\n' +
+                       '查看已過行程表時，預定計劃為紅色，實際完成事項為綠色。\n\n' + 
+                       "事項標題包含 '讀聖經'、'傳福音'、'家聚會'、'個人禱告' 會累計時數給服事者查看，請勿使用其他描述（如 '讀經'）。正確範例：'狂讀聖經一卷'。";
 
   // event.className: 'past-plan', 'past-adjust', 'now'
   $(document).ready(function() {
@@ -208,7 +208,8 @@ html
           div(class="form-group")
             label(id="body-event-description")
         div(class="modal-footer")
-          button(type="button", class="btn btn-success", data-dismiss="modal") 確定
+          //button(type="button", class="btn btn-success", data-dismiss="modal") 確定
+          span(style='font-size: 0.8em') <br> (移動, 改長度請跳出並長按事項)
           button(type="button", class="btn btn-danger", data-dismiss="modal", id="delete-event") 刪除
 
 script.
