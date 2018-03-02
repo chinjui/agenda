@@ -68,18 +68,19 @@ function begin_new_round() {
       // add plan to past
       // if the same event appears in adjust, delete it
       for (var j = 0; j < plan.length; j ++) {
+        plan[j].className = 'past-plan';
         for (var k = 0; k < adjust.length; k ++) {
           if (typeof(adjust[k]) != 'undefined') {
             if (plan[j].title == adjust[k].title &&
                 plan[j].start == adjust[k].start &&
                 plan[j].end   == adjust[k].end) {
               adjust.splice(k, 1);
+              plan[j].className = 'past-complete';
               break;
             }
           }
         }
 
-        plan[j].className = 'past-plan';
         past.push(plan[j]);
       }
 
