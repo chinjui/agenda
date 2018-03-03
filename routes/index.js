@@ -7,7 +7,7 @@ var moment = require('moment');
 var cron = require('cron');
 
 var serviceAccount = require('../week-calendar-194609-firebase-adminsdk-o53vz-a2d31d8bc9.json');
-var admin_uid = "g3zIfkYXPuSSfCAM6ehVdISESOl2";
+var admin_uids = ["g3zIfkYXPuSSfCAM6ehVdISESOl2", "8nwvy33BE7g0C0ow4IXn5BJmQzZ2"];
 
 
 function get_status(now=null) {
@@ -134,7 +134,7 @@ function begin_adjust() {
   _status = 'adjust';
 };
 begin_adjust_schedule = new cron.CronJob({
-  cronTime: '0 1 * * 6',
+  cronTime: '0 12 * * 6',
   onTick: begin_adjust,
   start: true,
   timeZone: 'Asia/Taipei'
@@ -192,7 +192,7 @@ router.post('/add-comment', function(req, res, next) {
       var name = decodedToken.name;
       var path = __dirname + '/../data/agendas/' + requested_uid + '/comment';
 
-      if (admin_uid != uid) {
+      if (!admin_uids.includes(uid)) {
         res.end('You are not an admin!');
         return;
       }
@@ -304,9 +304,9 @@ router.post('/get-events', function(req, res, next){
     .then(function(decodedToken) {
       var uid = decodedToken.uid;
       var name = decodedToken.name;
-      if (admin_uid == uid && typeof(requested_uid) != 'undefined')
+      if (admin_uids.includes(uid) && typeof(requested_uid) != 'undefined')
         uid = requested_uid;
-      else if (admin_uid != uid && typeof(requested_uid) != 'undefined') {
+      else if (!admin_uids.includes(uid) && typeof(requested_uid) != 'undefined') {
         res.end('You are not an admin!');
         return;
       }

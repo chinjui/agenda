@@ -216,7 +216,7 @@ script.
   $('#event-query-modal button').on('click', function(event) {
     if (this.id == 'confirm-add-event') {
       [plan_begin, plan_end, adjust_end] = get_time_limit();
-      if (clicked_date.isBefore(plan_end)) {
+      if (clicked_date.isBefore(plan_begin.endOf('day'))) {
         alert("已過行事曆不可更改");
         return;
       }

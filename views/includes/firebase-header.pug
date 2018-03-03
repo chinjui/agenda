@@ -1,5 +1,5 @@
 meta(charset='UTF-8')
-title Sample FirebaseUI App
+title 竹苗大學中幹訓練
 //
   *******************************************************************************************
   * TODO(DEVELOPER): Paste the initialization snippet from:
@@ -86,6 +86,10 @@ block onAuthStateChanged
                       color = '#2ECB4B';  // green
                       editable = false;
                     }
+                    else if (d.className == 'past-complete') {
+                      color = '#EC9600';  // orange
+                      editable = false;
+                    }
                     else if (d.className == 'now') {
                       // client will only recieve className: 'now'
                       // though it is in plan or adjust file
@@ -94,7 +98,7 @@ block onAuthStateChanged
                     }
                     else {
                       // TODO: error occur
-                      color = '#EC9600';  // orange
+                      color = '#F4C08B';
                       editable = false;
                     }
 
