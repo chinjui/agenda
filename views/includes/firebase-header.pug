@@ -78,18 +78,24 @@ block onAuthStateChanged
                   data = JSON.parse(data);
                   for (var i = 0; i < data.length; i++) {
                     d = data[i];
-                    if (d.className == 'past-plan')
+                    if (d.className == 'past-plan') {
                       color = '#FF3C33';  // red
-                    else if (d.className == 'past-adjust')
+                      editable = false;
+                    }
+                    else if (d.className == 'past-adjust') {
                       color = '#2ECB4B';  // green
+                      editable = false;
+                    }
                     else if (d.className == 'now') {
                       // client will only recieve className: 'now'
                       // though it is in plan or adjust file
                       color = '#3A87AD';  // blue
+                      editable = true;
                     }
                     else {
                       // TODO: error occur
                       color = '#EC9600';  // orange
+                      editable = false;
                     }
 
                     var event_source = [{
@@ -99,6 +105,7 @@ block onAuthStateChanged
                       end: d.end,
                       color: color,
                       className: d.className,
+                      editable: editable
                     }];
                     $('#calendar').fullCalendar('addEventSource', event_source);
                   }

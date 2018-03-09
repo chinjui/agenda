@@ -3,8 +3,8 @@ var router = express.Router();
 var admin = require('firebase-admin');
 var fs = require('fs');
 var path = require('path');
-var schedule = require('node-schedule');
 var moment = require('moment');
+var cron = require('cron');
 
 var serviceAccount = require('../week-calendar-194609-firebase-adminsdk-o53vz-a2d31d8bc9.json');
 var admin_uid = "g3zIfkYXPuSSfCAM6ehVdISESOl2";
@@ -47,7 +47,6 @@ if (moment().isAfter(plan_end_time))
 plan_end_time = new Date(plan_end_time.toString());
 
 /* merge schedule */
-var begin_new_round_schedule = null;
 function begin_new_round() {
   _status = 'merging';
   console.log('Begin to merge `plan` and `adjust`.');
@@ -103,13 +102,15 @@ function begin_new_round() {
 
   console.log('Finished merging');
   _status = 'plan';
-  begin_new_round_schedule = schedule.scheduleJob(round_end_time.setDate(round_end_time.getDate() + 7),
-                                                  begin_new_round);
 };
-begin_new_round_schedule = schedule.scheduleJob(round_end_time, begin_new_round);
+begin_new_round_schedule = new cron.CronJob({
+  cronTime: '0 18 * * 5',
+  onTick: begin_new_round,
+  start: true,
+  timeZone: 'Asia/Taipei'
+});
 
 /* copy schedule */
-var begin_adjust_schedule;
 function begin_adjust() {
   _status = 'copying';
   console.log('Begin to copy `plan` to `adjust`.');
@@ -131,9 +132,13 @@ function begin_adjust() {
 
   console.log('Finished copying');
   _status = 'adjust';
-  begin_adjust_schedule = schedule.scheduleJob(plan_end_time.setDate(plan_end_time.getDate() + 7), begin_adjust);
 };
-begin_adjust_schedule = schedule.scheduleJob(plan_end_time, begin_adjust);
+begin_adjust_schedule = new cron.CronJob({
+  cronTime: '0 0 * * 6',
+  onTick: begin_adjust,
+  start: true,
+  timeZone: 'Asia/Taipei'
+});
 
 
 admin.initializeApp({
@@ -356,11 +361,8 @@ router.post('/get-events', function(req, res, next){
         });
         addUserIfNotExist(uid, name);
       }
-      else if (requested_time == 'now') {
+      else if (requested_time == 'now' || requested_time == 'past') {
         readEventFromFile();
-      }
-      else if (requested_time == 'past') {
-
       }
       else {
         console.log('Error in get-events');
